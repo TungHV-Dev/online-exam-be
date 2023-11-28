@@ -5,7 +5,8 @@ const session = require('express-session')
 
 global.XMLHttpRequest = require('xhr2')
 
-
+const postgresConnection = require('./connections/postgres')
+postgresConnection.createConnectionPool()
 
 const bodyParser = require('body-parser')
 const port = Number(process.env.PORT || 9032)
