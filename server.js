@@ -5,8 +5,7 @@ const session = require('express-session')
 
 global.XMLHttpRequest = require('xhr2')
 
-const sqlserverConnection = require('./connections/sqlserver')
-sqlserverConnection.createConnectionSqlServer()
+
 
 const bodyParser = require('body-parser')
 const port = Number(process.env.PORT || 9032)
