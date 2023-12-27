@@ -9,15 +9,15 @@ create table users (
 	Email			varchar(200)	null,
 	Created_Time 	timestamp 		null,
 	Updated_Time	timestamp		null,
-	Is_Deleted		boolean			null
+	Is_Deleted		int				null,
+	Is_Locked 		int				null
 );
 
 create table roles (
 	Role_Id			serial			not null primary key,
 	Role_Name		varchar(100)	null,
 	Description		text			null,
-	Is_Deleted		boolean			null
-);
+	Is_Deleted		int				null
 
 create table public.class (
 	Class_Id		serial			not null primary key,
@@ -27,7 +27,7 @@ create table public.class (
 	Description		text			null,
 	Created_Time 	timestamp 		null,
 	Updated_Time	timestamp		null,
-	Is_Deleted		boolean			null
+	Is_Deleted		int				null
 );
 
 create table class_document (
@@ -37,7 +37,7 @@ create table class_document (
 	File_Path		text			null,
 	Created_Time 	timestamp 		null,
 	Updated_Time	timestamp		null,
-	Is_Deleted		boolean			null
+	Is_Deleted		int				null
 );
 
 create table user_exam (
@@ -49,7 +49,7 @@ create table user_exam (
 	Score			decimal 		null,
 	Created_Time 	timestamp 		null,
 	Updated_Time	timestamp		null,
-	Is_Deleted		boolean			null
+	Is_Deleted		int				null
 );
 
 create table exam (
@@ -59,10 +59,10 @@ create table exam (
 	Description		text			null,
 	Total_Question	int				null,
 	Total_Minutes	int				null,
-	Is_Published	boolean			null,
+	Is_Published	int				null,
 	Created_Time 	timestamp 		null,
 	Updated_Time	timestamp		null,
-	Is_Deleted		boolean			null
+	Is_Deleted		int				null
 );
 
 create table user_exam_question (
@@ -80,7 +80,7 @@ create table questions (
 	Question_Content  	text			null,
 	Created_Time 		timestamp 		null,
 	Updated_Time		timestamp		null,
-	Is_Deleted			boolean			null
+	Is_Deleted		int				null
 );
 
 create table results (
@@ -91,5 +91,5 @@ create table results (
 	Is_Correct			boolean			null,
 	Created_Time 		timestamp 		null,
 	Updated_Time		timestamp		null,
-	Is_Deleted			boolean			null
+	Is_Deleted			int				null
 );

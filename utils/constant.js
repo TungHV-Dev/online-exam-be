@@ -28,5 +28,4 @@ module.exports = {
         YYYY_MM_DD: 'YYYY-MM-DD',
         YYYYMMDDHHmmss: 'YYYYMMDDHHmmss'
     },
-    RECORD_PER_INSERT_EXCEL: 200
 }
