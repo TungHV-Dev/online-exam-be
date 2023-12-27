@@ -12,7 +12,15 @@ const getOverviewData = async () => {
 }
 
 const getNearestJoinedExamNumber = async () => {
-
+    const sqlQuery = 
+        `select 
+            to_char(created_time::date, 'DD-MM-YYYY') as exam_date, count(id) as joined_exam_number
+        from user_exam
+        where created_time::date >= (current_date - interval '6 days')::date and is_deleted = 0
+        group by created_time::date
+        order by created_time::date desc;`
+    const response = await _postgresDB.query(sqlQuery, [])
+    return response.rows
 }
 
 

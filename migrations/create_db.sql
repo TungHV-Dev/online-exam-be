@@ -40,9 +40,19 @@ create table class_document (
 	Is_Deleted		int				null
 );
 
+create table user_class (
+	Id				serial		not null primary key,
+	User_Id 		int			null,
+	Class_Id 		int			null,
+	Created_Time 	timestamp 	null,
+	Updated_Time	timestamp	null,
+	Is_Deleted		int			null
+);
+
 create table user_exam (
 	Id				serial			not null primary key,
 	User_Id 		int				null,
+	Class_Id 		int				null,
 	Exam_Id			int 			null,
 	Start_Time		timestamp		null,
 	End_Time		timestamp		null,
