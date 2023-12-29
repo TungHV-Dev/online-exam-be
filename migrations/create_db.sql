@@ -2,6 +2,7 @@ create table users (
 	User_Id 		serial			not null primary key,
 	User_Name 		varchar(100) 	null,
 	Password_Hash	text			null,
+	Full_Name 		varchar(100) 	null,
 	Role_Id			int				null,
 	Gender			varchar(10)		null,
 	Address			text			null,

@@ -33,7 +33,7 @@ app.use(cors({
 
 const dashboardApi = require('./routers/dashboard.router')
 const classApi = require('./routers/class.router')
-const adminApi = require('./routers/admin.router')
+const userApi = require('./routers/user.router')
 const authApi = require('./routers/auth.router')
 
 app.get('/health-check', (req, res) => {
@@ -42,7 +42,7 @@ app.get('/health-check', (req, res) => {
 
 app.use('/online-exam-api/dashboard', dashboardApi)
 app.use('/online-exam-api/class', classApi)
-app.use('/online-exam-api/admin', adminApi)
+app.use('/online-exam-api/user', userApi)
 app.use('/online-exam-api/auth', authApi)
 
 app.listen(port, () => {

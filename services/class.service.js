@@ -6,8 +6,22 @@ const getPublishedClassList = async (type, userId) => {
     return []
 }
 
-const createNewClass = async () => {
+const createNewClass = async (payload) => {
+    const teacherId = payload.teacherId || 0
+    const classCode = payload.classCode || ''
+    const className = payload.className || ''
+    const description = payload.description || ''
 
+    if (teacherId && classCode && className && description) {
+        const result = await classRepo.insertClass(teacherId, classCode, className, description)
+        if (result.rowCount > 0 && result.rows[0].class_id) {
+            return 0
+        } else {
+            return -1
+        }
+    }
+
+    return -2
 }
 
 const joinPublishedClass = async () => {

@@ -32,18 +32,24 @@ router.get('/published-list', async (req, res) => {
 
 router.post('/create', async (req, res) => {
     try {
-        const result = await classService.createNewClass()
-        if (result) {
+        const resultCode = await classService.createNewClass(req.body)
+        if (resultCode == 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
+            })
+        }
+
+        if (resultCode == -2) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: constant.RESPONSE_MESSAGE.INPUT_INVALID,
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.FAIL,
+            message: constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
         console.log('Exception at router /class/create: ', e?.message)
