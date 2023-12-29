@@ -24,10 +24,11 @@ const getDashboardSummaryData = async () => {
             }
         })
 
+        const top5Class = await dashboardRepo.getTopClassHasMaxAvgScore(5)
         const result = {
             overview: overviewData,
             chart: chartData.reverse(),
-            table: []
+            table: top5Class
         }
         return result
     } catch (error) {
