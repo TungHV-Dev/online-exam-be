@@ -4,10 +4,11 @@ create table users (
 	Password_Hash	text			null,
 	Full_Name 		varchar(100) 	null,
 	Role_Id			int				null,
+	Email			varchar(200)	null,
 	Gender			varchar(10)		null,
 	Address			text			null,
 	Phone_Number	varchar(15)		null,
-	Email			varchar(200)	null,
+	Date_Of_Birth	varchar(20)		null,
 	Created_Time 	timestamp 		null,
 	Updated_Time	timestamp		null,
 	Is_Deleted		int				null,
@@ -19,6 +20,7 @@ create table roles (
 	Role_Name		varchar(100)	null,
 	Description		text			null,
 	Is_Deleted		int				null
+);
 
 create table public.class (
 	Class_Id		serial			not null primary key,
