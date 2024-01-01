@@ -16,7 +16,15 @@ const getAllRoles = async () => {
     return roles
 }
 
+const searchUsers = async (page, size, searchValue) => {
+    const limit = size
+    const offset = page * size
+    const result = await userRepo.getUsersPaging(searchValue, offset, limit)
+    return result
+}
+
 module.exports = {
     getAllTeacher,
-    getAllRoles
+    getAllRoles,
+    searchUsers
 }

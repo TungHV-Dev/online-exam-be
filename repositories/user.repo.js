@@ -1,3 +1,5 @@
+const pgSql = require('yesql').pg
+
 const getUsers = async (condition) => {
     let whereSql = ' where 1 = 1 '
 
@@ -50,9 +52,52 @@ const getUserByEmail = async (email) => {
     return response.rows[0]
 }
 
+const getUsersPaging = async (searchValue, offsetValue = 0, limitValue = 10) => {
+    const querySql = 
+        `select 
+            u.user_id, u.user_name, u.full_name, r.role_id, r.role_name, u.date_of_birth, u.email, u.phone_number
+        from users u
+        left join roles r on r.role_id = u.role_id
+        where 
+            (
+                lower(u.user_name) like concat('%', lower(:search::text), '%') 
+                or lower(u.full_name) like concat('%', lower(:search::text), '%')
+            )
+            and u.is_deleted = 0 and u.is_locked = 0
+        order by u.user_name
+        offset :offset
+        limit :limit `
+
+    const totalSql = 
+        `select count(u.user_id) as total
+        from users u
+        left join roles r on r.role_id = u.role_id
+        where
+            (
+                lower(u.user_name) like concat('%', lower(:search::text), '%') 
+                or lower(u.full_name) like concat('%', lower(:search::text), '%')
+            )
+            and u.is_deleted = 0 and u.is_locked = 0;`
+
+    const dataSearch = await _postgresDB.query(pgSql(querySql, { useNullForMissing: true }) ({
+        search: searchValue,
+        offset: offsetValue,
+        limit: limitValue
+    }))
+
+    const totalSearch = await _postgresDB.query(pgSql(totalSql, { useNullForMissing: true }) ({
+        search: searchValue,
+    }))
+    return {
+        data: dataSearch.rows,
+        total: totalSearch.rows[0].total
+    }
+}
+
 module.exports = {
     getUsers,
     insertUser,
     getUserByUsername,
-    getUserByEmail
+    getUserByEmail,
+    getUsersPaging
 }
