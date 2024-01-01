@@ -71,15 +71,14 @@ const login = async (data) => {
         // Generate access token
         const claim = {
             userId: user.user_id,
-            userRole: user.role_id,
             userName: user.user_name,
-            email: user.email
         }
         const privateKey = fs.readFileSync('./online_exam_private_key.pem', 'utf8')
         const jwtToken = jwt.sign(claim, privateKey, {
             algorithm: 'RS256',
-            expiresIn: '1h'
+            expiresIn: '4h'
         })
+        
         return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', {
             accessToken: jwtToken
         })

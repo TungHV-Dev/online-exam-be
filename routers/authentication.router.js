@@ -1,10 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const constant = require('../utils/constant')
+const { verifyToken } = require('../middleware/jwt.middleware')
+const { verifyRole } = require('../middleware/role.middleware')
 const authenValidator = require('../validation/authentication.validator')
 const authenService = require('../services/authentication.service')
 
-router.post('/register', async (req, res) => {
+
+router.post('/register', [verifyToken], async (req, res) => {
     try {
         const registerData = req.body
         const validatiton = authenValidator.registerValidator(registerData)

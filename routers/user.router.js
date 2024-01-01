@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const constant = require('../utils/constant')
+const { verifyToken } = require('../middleware/jwt.middleware')
+const { verifyRole } = require('../middleware/role.middleware')
 const userService = require('../services/user.service')
 
-router.get('/all-teachers', async (req, res) => {
+router.get('/all-teachers', [verifyToken], async (req, res) => {
     try {
         const result = await userService.getAllTeacher()
         if (result) {
@@ -27,7 +29,7 @@ router.get('/all-teachers', async (req, res) => {
     }
 })
 
-router.get('/all-roles', async (req, res) => {
+router.get('/all-roles', [verifyToken], async (req, res) => {
     try {
         const result = await userService.getAllRoles()
         if (result) {
@@ -51,7 +53,7 @@ router.get('/all-roles', async (req, res) => {
     }
 })
 
-router.get('/search', async (req, res) => {
+router.get('/search', [verifyToken], async (req, res) => {
     try {
         const page = req.query.page || 0
         const size = req.query.size || 10
