@@ -21,7 +21,8 @@ const insertUser = async (userInfor) => {
         `insert into users 
             (user_name, password_hash, full_name, role_id, gender, address, phone_number, email, created_time, updated_time, is_deleted, is_locked)
         values 
-            ($1, $2, $3, $4, $5, $6, $7, $8, now(), now(), 0, 0);`
+            ($1, $2, $3, $4, $5, $6, $7, $8, now(), now(), 0, 0)
+        returning user_id;`
 
     const response = await _postgresDB.query(commandSql, [
         userInfor.user_name,
@@ -39,13 +40,13 @@ const insertUser = async (userInfor) => {
 const getUserByUsername = async (username) => {
     const querySql = `select * from users where user_name = $1 and is_deleted = 0;`
     const response = await _postgresDB.query(querySql, username)
-    return response.rows
+    return response.rows[0]
 }
 
 const getUserByEmail = async (email) => {
     const querySql = `select * from users where email = $1 and is_deleted = 0;`
     const response = await _postgresDB.query(querySql, email)
-    return response.rows
+    return response.rows[0]
 }
 
 module.exports = {

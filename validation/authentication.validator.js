@@ -1,18 +1,18 @@
-const { ResponseValidator } = require('../model/validator')
+const { ResponseValidator } = require('../model/response')
 
 const registerValidator = function (data) {
     // check username
-    if (!checkUserNameValid(data.username)) {
+    if (!data.username || !checkUserNameValid(data.username)) {
         return new ResponseValidator(false, 'Tên đăng nhập không hợp lệ!')
     }
 
     // check password
-    if (!checkPasswordValid(data.password)) {
+    if (!data.password || !checkPasswordValid(data.password)) {
         return new ResponseValidator(false, 'Mật khẩu không hợp lệ!')
     }
 
     // check email
-    if (!checkEmailValid(data.email)) {
+    if (!data.email || !checkEmailValid(data.email)) {
         return new ResponseValidator(false, 'Email không hợp lệ!')
     }
 

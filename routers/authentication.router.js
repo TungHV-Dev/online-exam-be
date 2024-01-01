@@ -15,17 +15,17 @@ router.post('/register', async (req, res) => {
             })
         }
 
-        const resultCode = await authenService.registerUser(registerData)
-        if (resultCode == 0) {
+        const response = await authenService.registerUser(registerData)
+        if (response.resultCode == constant.RESPONSE_CODE.FAIL) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
-                code: constant.RESPONSE_CODE.SUCCESS,
-                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                code: constant.RESPONSE_CODE.FAIL,
+                message: response.message || constant.RESPONSE_MESSAGE.FAIL,
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.SUCCESS,
+            message: constant.RESPONSE_MESSAGE.SUCCESS,
         })
     } catch (e) {
         console.log('Exception at router /auth/register: ', e?.message)
