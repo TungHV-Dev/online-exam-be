@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
         }
 
         const response = await authenService.registerUser(registerData)
-        if (response.resultCode == constant.RESPONSE_CODE.FAIL) {
+        if (response.resultCode === constant.RESPONSE_CODE.FAIL) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.FAIL,
                 message: response.message || constant.RESPONSE_MESSAGE.FAIL,
@@ -29,6 +29,39 @@ router.post('/register', async (req, res) => {
         })
     } catch (e) {
         console.log('Exception at router /auth/register: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
+router.post('/login', async (req, res) => {
+    try {
+        const loginData = req.body
+        const validatiton = authenValidator.loginValidator(loginData)
+        if (!validatiton.valid) {
+            return res.status(constant.HTTP_STATUS_CODE.BAD_REQUEST).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: validatiton.message || constant.RESPONSE_MESSAGE.INPUT_INVALID
+            })
+        }
+
+        const response = await authenService.login(loginData)
+        if (response.resultCode === constant.RESPONSE_CODE.FAIL) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: response.message || constant.RESPONSE_MESSAGE.FAIL,
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.SUCCESS,
+            message: constant.RESPONSE_MESSAGE.SUCCESS,
+            data: response.data
+        })
+    } catch (e) {
+        console.log('Exception at router /auth/login: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR

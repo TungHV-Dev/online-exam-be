@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const fs = require('fs')
 const userRepo = require('../repositories/user.repo')
 const masterData = require('../utils/master-data')
 const constant = require('../utils/constant')
@@ -9,6 +10,7 @@ const registerUser = async (data) => {
     try {
         const { username, password, roleId, fullName, dateOfBirth, gender, email, phoneNumber, address } = data
 
+        // Kiểm tra user đã tồn tại chưa
         let userExist = null
         userExist = await userRepo.getUserByUsername(username)
         if (userExist) {
@@ -20,6 +22,7 @@ const registerUser = async (data) => {
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Email đã tồn tại trong hệ thống!')
         }
     
+        // Tạo mật khẩu mã hóa và lưu thông tin user
         const saltRounds = 10
         const passwordHash = bcrypt.hashSync(password, saltRounds)
         
@@ -45,6 +48,47 @@ const registerUser = async (data) => {
     }
 }
 
+const login = async (data) => {
+    try {
+        const { username, password } = data
+        // Kiểm tra xem user có tồn tại hay không
+        const user = await userRepo.getUserByUsername(username)
+        if (!user) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không tồn tại trong hệ thống!')
+        }
+
+        if (user.is_locked === 1) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên!')
+        }
+
+        // Kiểm tra password
+        const passwordHashInDb = user.password_hash || ''
+        const checkPassword = bcrypt.compareSync(password, passwordHashInDb)
+        if (!checkPassword) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!')
+        }
+        
+        // Generate access token
+        const claim = {
+            userId: user.user_id,
+            userRole: user.role_id,
+            userName: user.user_name,
+            email: user.email
+        }
+        const privateKey = fs.readFileSync('./online_exam_private_key.pem', 'utf8')
+        const jwtToken = jwt.sign(claim, privateKey, {
+            algorithm: 'RS256',
+            expiresIn: '1h'
+        })
+        return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', {
+            accessToken: jwtToken
+        })
+    } catch (err) {
+        throw err
+    }
+}
+
 module.exports = {
-    registerUser
+    registerUser,
+    login
 }

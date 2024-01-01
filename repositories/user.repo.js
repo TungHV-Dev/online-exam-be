@@ -41,13 +41,13 @@ const insertUser = async (userInfor) => {
 }
 
 const getUserByUsername = async (username) => {
-    const querySql = `select * from users where user_name = $1 and is_deleted = 0;`
+    const querySql = `select * from users where user_name = $1::text and is_deleted = 0;`
     const response = await _postgresDB.query(querySql, [username])
     return response.rows[0]
 }
 
 const getUserByEmail = async (email) => {
-    const querySql = `select * from users where email = $1 and is_deleted = 0;`
+    const querySql = `select * from users where email = $1::text and is_deleted = 0;`
     const response = await _postgresDB.query(querySql, [email])
     return response.rows[0]
 }

@@ -6,9 +6,10 @@ class ResponseValidator {
 }
 
 class ResponseService {
-    constructor(resultCode = 0, message = '') {
+    constructor(resultCode = 0, message = '', data = null) {
         this.resultCode = resultCode
         this.message = message
+        this.data = data
     }
 }
 
