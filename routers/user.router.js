@@ -3,7 +3,7 @@ const router = express.Router()
 const constant = require('../utils/constant')
 const userService = require('../services/user.service')
 
-router.get('/teachers', async (req, res) => {
+router.get('/all-teachers', async (req, res) => {
     try {
         const result = await userService.getAllTeacher()
         if (result) {
@@ -19,13 +19,39 @@ router.get('/teachers', async (req, res) => {
             message: constant.RESPONSE_MESSAGE.NOT_FOUND,
         })
     } catch (e) {
-        console.log('Exception at router /dashboard/summary-data: ', e?.message)
+        console.log('Exception at router /user/all-teachers: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
         })
     }
 })
+
+router.get('/all-roles', async (req, res) => {
+    try {
+        const result = await userService.getAllRoles()
+        if (result) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.NOT_FOUND,
+            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+        })
+    } catch (e) {
+        console.log('Exception at router /user/all-roles: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
+
 
 
 module.exports = router

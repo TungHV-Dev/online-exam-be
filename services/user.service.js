@@ -1,4 +1,5 @@
 const userRepo = require('../repositories/user.repo')
+const roleRepo = require('../repositories/role.repo')
 const masterData = require('../utils/master-data')
 
 const getAllTeacher = async () => {
@@ -10,6 +11,12 @@ const getAllTeacher = async () => {
     return teachers
 }
 
+const getAllRoles = async () => {
+    const roles = await roleRepo.getAllRoles()
+    return roles
+}
+
 module.exports = {
-    getAllTeacher
+    getAllTeacher,
+    getAllRoles
 }

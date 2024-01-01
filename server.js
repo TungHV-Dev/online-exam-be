@@ -34,7 +34,7 @@ app.use(cors({
 const dashboardApi = require('./routers/dashboard.router')
 const classApi = require('./routers/class.router')
 const userApi = require('./routers/user.router')
-const authApi = require('./routers/auth.router')
+const authApi = require('./routers/authentication.router')
 
 app.get('/health-check', (req, res) => {
     res.status(200).json({ code: 200, message: `Service is running on port ${port}` })
