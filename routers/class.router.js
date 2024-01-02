@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const constant = require('../utils/constant')
 const classService = require('../services/class.service')
+const classValidator = require('../validation/class.validator')
 
 router.get('/published-list', async (req, res) => {
     try {
@@ -32,24 +33,26 @@ router.get('/published-list', async (req, res) => {
 
 router.post('/create', async (req, res) => {
     try {
-        const resultCode = await classService.createNewClass(req.body)
-        if (resultCode == 0) {
+        const payload = req.body
+        const validatiton = classValidator.createClassValidator(payload)
+        if (!validatiton.valid) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: validatiton.message || constant.RESPONSE_MESSAGE.INPUT_INVALID,
+            })
+        }
+
+        const response = await classService.createNewClass(payload)
+        if (response.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
             })
         }
 
-        if (resultCode == -2) {
-            return res.status(constant.HTTP_STATUS_CODE.OK).json({
-                code: constant.RESPONSE_CODE.FAIL,
-                message: constant.RESPONSE_MESSAGE.INPUT_INVALID,
-            })
-        }
-
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
             code: constant.RESPONSE_CODE.FAIL,
-            message: constant.RESPONSE_MESSAGE.FAIL,
+            message: response.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
         console.log('Exception at router /class/create: ', e?.message)
@@ -62,7 +65,7 @@ router.post('/create', async (req, res) => {
 
 router.post('/join', async (req, res) => {
     try {
-        const result = await classService.joinPublishedClass()
+        const result = await classService.joinPublishedClass(req.body)
         if (result) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,

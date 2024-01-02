@@ -1,4 +1,5 @@
 const classRepo = require('../repositories/class.repo')
+const { ResponseService } = require('../model/response')
 const constant = require('../utils/constant')
 
 const getPublishedClassList = async (type, userId) => {
@@ -12,20 +13,31 @@ const createNewClass = async (payload) => {
     const className = payload.className || ''
     const description = payload.description || ''
 
-    if (teacherId && classCode && className && description) {
-        const result = await classRepo.insertClass(teacherId, classCode, className, description)
-        if (result.rowCount > 0 && result.rows[0].class_id) {
-            return 0
-        } else {
-            return -1
-        }
+    const result = await classRepo.insertClass(teacherId, classCode, className, description)
+    if (result.rowCount > 0 && result.rows[0].class_id) {
+        return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
     }
-
-    return -2
+    return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 
-const joinPublishedClass = async () => {
+const joinPublishedClass = async (data) => {
+    const { classId, userId } = data
 
+    const classExist = await classRepo.getClassById(classId)
+    if (!classExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    }
+
+    const userExist = await classRepo.checkUserExistInClass(classId, userId)
+    if (userExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên đã tham gia lớp học. Vui lòng kiểm tra lại!')
+    }
+
+    const result = await classRepo.addUserToClass(classId, userId)
+    if (result.rowCount > 0 && result.rows[0].id) {
+        return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
+    }
+    return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 
 const getMemberList = async () => {
