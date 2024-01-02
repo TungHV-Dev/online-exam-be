@@ -61,7 +61,7 @@ const getUserByIdAndName = async (userId, userName) => {
 const getUsersPaging = async (searchValue, offsetValue = 0, limitValue = 10) => {
     const querySql = 
         `select 
-            u.user_id, u.user_name, u.full_name, r.role_id, r.role_name, u.date_of_birth, u.email, u.phone_number
+            u.user_id, u.user_name, u.full_name, r.role_id, r.role_name, u.date_of_birth, u.email, u.phone_number, u.is_locked
         from users u
         left join roles r on r.role_id = u.role_id
         where 
@@ -69,7 +69,7 @@ const getUsersPaging = async (searchValue, offsetValue = 0, limitValue = 10) => 
                 lower(u.user_name) like concat('%', lower(:search::text), '%') 
                 or lower(u.full_name) like concat('%', lower(:search::text), '%')
             )
-            and u.is_deleted = 0 and u.is_locked = 0
+            and u.is_deleted = 0
         order by u.user_name
         offset :offset
         limit :limit `
@@ -83,7 +83,7 @@ const getUsersPaging = async (searchValue, offsetValue = 0, limitValue = 10) => 
                 lower(u.user_name) like concat('%', lower(:search::text), '%') 
                 or lower(u.full_name) like concat('%', lower(:search::text), '%')
             )
-            and u.is_deleted = 0 and u.is_locked = 0;`
+            and u.is_deleted = 0;`
 
     const dataSearch = await _postgresDB.query(pgSql(querySql, { useNullForMissing: true }) ({
         search: searchValue,
@@ -100,11 +100,18 @@ const getUsersPaging = async (searchValue, offsetValue = 0, limitValue = 10) => 
     }
 }
 
+const lockUser = async (userId, lock) => {
+    const commandSql = `update users set is_locked = $1 where user_id = $2 and is_deleted = 0;`
+    const response = await _postgresDB.query(commandSql, [lock, userId])
+    return response
+}
+
 module.exports = {
     getUsers,
     insertUser,
     getUserByUsername,
     getUserByEmail,
     getUserByIdAndName,
-    getUsersPaging
+    getUsersPaging,
+    lockUser
 }
