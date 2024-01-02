@@ -6,21 +6,14 @@ const classValidator = require('../validation/class.validator')
 
 router.get('/published-list', async (req, res) => {
     try {
-        const type = req.query.type
+        const joined = req.query.joined
         const userId = req.query.userId
 
-        const result = await classService.getPublishedClassList(type, userId)
-        if (result) {
-            return res.status(constant.HTTP_STATUS_CODE.OK).json({
-                code: constant.RESPONSE_CODE.SUCCESS,
-                message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
-            })
-        }
-
+        const result = await classService.getPublishedClassList(joined, userId)
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.SUCCESS,
+            message: constant.RESPONSE_MESSAGE.SUCCESS,
+            data: result.data
         })
     } catch (e) {
         console.log('Exception at router /class/published-list: ', e?.message)

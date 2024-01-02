@@ -2,9 +2,16 @@ const classRepo = require('../repositories/class.repo')
 const { ResponseService } = require('../model/response')
 const constant = require('../utils/constant')
 
-const getPublishedClassList = async (type, userId) => {
+const getPublishedClassList = async (joined = true, userId) => {
+    let classList = []
 
-    return []
+    if (joined) {
+        classList = await classRepo.getClassListUserNotJoin(userId)
+    } else {
+        classList = await classRepo.getClassListUserJoined(userId)
+    }
+    
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', classList)
 }
 
 const createNewClass = async (payload) => {

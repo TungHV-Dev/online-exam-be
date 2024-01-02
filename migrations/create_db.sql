@@ -47,6 +47,7 @@ create table user_class (
 	Id					serial		not null primary key,
 	User_Id 			int			null,
 	Class_Id 			int			null,
+	Status				text		null,
 	Created_Time 		timestamp 	null,
 	Updated_Time		timestamp	null,
 	Is_Deleted			int			null

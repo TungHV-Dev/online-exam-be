@@ -44,9 +44,9 @@ const verifyToken = async (req, res, next) => {
 
         let message = ''
         if (err instanceof jwt.TokenExpiredError) {
-            message = 'Token hết hạn!'
+            message = 'Token hết hạn. Vui lòng đăng nhập lại!'
         } else {
-            message = 'Token không hợp lệ!'
+            message = 'Token không hợp lệ. Vui lòng kiểm tra lại!'
         }
 
         return res.status(constant.HTTP_STATUS_CODE.UNAUTHORIZED).json({

@@ -10,6 +10,11 @@ const MASTER_DATA = {
             TEACHER: 'TEACHER',
             STUDENT: 'STUDENT'
         }
+    },
+    LEARNING_STATUS: {
+        TO_DO: 'To do',
+        INPROGRESS: 'Inprogress',
+        COMPLETED: 'Completed'
     }
 }
 
