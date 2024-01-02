@@ -5,10 +5,10 @@ const constant = require('../utils/constant')
 const getPublishedClassList = async (joined = true, userId) => {
     let classList = []
 
-    if (joined) {
-        classList = await classRepo.getClassListUserNotJoin(userId)
-    } else {
+    if (joined === true) {
         classList = await classRepo.getClassListUserJoined(userId)
+    } else {
+        classList = await classRepo.getClassListUserNotJoin(userId)
     }
     
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', classList)
@@ -20,10 +20,16 @@ const createNewClass = async (payload) => {
     const className = payload.className || ''
     const description = payload.description || ''
 
+    const classExist = await classRepo.getClassByClassCode(classCode)
+    if (classExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Mã lớp học đã tồn tại. Vui lòng kiểm tra lại!')
+    }
+
     const result = await classRepo.insertClass(teacherId, classCode, className, description)
     if (result.rowCount > 0 && result.rows[0].class_id) {
         return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
     }
+
     return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 

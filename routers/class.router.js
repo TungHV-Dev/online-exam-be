@@ -4,19 +4,35 @@ const constant = require('../utils/constant')
 const classService = require('../services/class.service')
 const classValidator = require('../validation/class.validator')
 
-router.get('/published-list', async (req, res) => {
+router.get('/not-join-list', async (req, res) => {
     try {
-        const joined = req.query.joined
         const userId = req.query.userId
-
-        const result = await classService.getPublishedClassList(joined, userId)
+        const result = await classService.getPublishedClassList(false, userId)
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
             code: constant.RESPONSE_CODE.SUCCESS,
             message: constant.RESPONSE_MESSAGE.SUCCESS,
             data: result.data
         })
     } catch (e) {
-        console.log('Exception at router /class/published-list: ', e?.message)
+        console.log('Exception at router /class/not-join-list: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
+router.get('/joined-list', async (req, res) => {
+    try {
+        const userId = req.query.userId
+        const result = await classService.getPublishedClassList(true, userId)
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.SUCCESS,
+            message: constant.RESPONSE_MESSAGE.SUCCESS,
+            data: result.data
+        })
+    } catch (e) {
+        console.log('Exception at router /class/joined-list: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -59,17 +75,16 @@ router.post('/create', async (req, res) => {
 router.post('/join', async (req, res) => {
     try {
         const result = await classService.joinPublishedClass(req.body)
-        if (result) {
+        if (result.resultCode == 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
         console.log('Exception at router /class/join: ', e?.message)

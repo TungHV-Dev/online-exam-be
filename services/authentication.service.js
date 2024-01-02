@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const userRepo = require('../repositories/user.repo')
-const masterData = require('../utils/master-data')
+const roleRepo = require('../repositories/role.repo')
 const constant = require('../utils/constant')
 const { ResponseService } = require('../model/response')
 
@@ -69,9 +69,15 @@ const login = async (data) => {
         }
         
         // Generate access token
+        const functionCodes = []
+        const functionList = await roleRepo.getPermissionByRoleId(user.role_id)
+        functionList.map(func => {
+            functionCodes.push(func.function_code)
+        })
         const claim = {
             userId: user.user_id,
             userName: user.user_name,
+            functionCodes: functionCodes
         }
         const privateKey = fs.readFileSync('./online_exam_private_key.pem', 'utf8')
         const jwtToken = jwt.sign(claim, privateKey, {

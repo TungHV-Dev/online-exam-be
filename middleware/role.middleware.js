@@ -2,7 +2,8 @@ const roleRepo = require('../repositories/role.repo')
 const constant = require('../utils/constant')
 
 const verifyRole = async (req, res, next) => {
-    const functionCode = req.baseUrl + req.path
+    const requestPath = req.baseUrl + req.path
+    const functionCode = requestPath.substring('/online-exam-api'.length, requestPath.length)
     const roleId = req.roleId || 0
 
     const permission = await roleRepo.getPermissionByRoleIdAndFunctionCode(roleId, functionCode)

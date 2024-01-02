@@ -4,6 +4,17 @@ const getAllRoles = async () => {
     return response.rows
 }
 
+const getPermissionByRoleId = async (roleId) => {
+    const querySql = 
+        `select af.function_id, af.function_code 
+        from roles r 
+        inner join role_app_function raf on raf.role_id = r.role_id and r.is_deleted = 0
+        inner join app_function af on af.function_id = raf.function_id and af.is_deleted = 0
+        where r.role_id = $1::integer`
+    const response = await _postgresDB.query(querySql, [roleId])
+    return response.rows
+}
+
 const getPermissionByRoleIdAndFunctionCode = async (roleId, functionCode) => {
     const querySql = 
         `select af.function_id, af.function_code 
@@ -18,5 +29,6 @@ const getPermissionByRoleIdAndFunctionCode = async (roleId, functionCode) => {
 
 module.exports = {
     getAllRoles,
+    getPermissionByRoleId,
     getPermissionByRoleIdAndFunctionCode
 }
