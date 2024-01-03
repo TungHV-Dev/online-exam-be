@@ -53,19 +53,24 @@ const joinPublishedClass = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 
-const getMemberList = async () => {
+const getClassDetail = async (data) => {
+    const { classId, userId } = data
+    const classExist = await classRepo.getClassById(classId)
+    if (!classExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    }
 
-}
+    const userExist = await classRepo.checkUserExistInClass(classId, userId)
+    if (!userExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+    }
 
-const getDocumentList = async () => {
+    let result = {
+        classCode: classExist.class_code,
+        
+    }
 
-}
 
-const getExamList = async () => {
-
-}
-
-const getClassDetail = async () => {
 
 }
 
@@ -89,9 +94,6 @@ module.exports = {
     getPublishedClassList,
     createNewClass,
     joinPublishedClass,
-    getMemberList,
-    getDocumentList,
-    getExamList,
     getClassDetail,
     addDocument,
     createExam,
