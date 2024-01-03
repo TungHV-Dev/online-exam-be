@@ -102,7 +102,7 @@ create table results (
 	Question_Id			int				null,
 	Result_Key			int				null,
 	Result_Value		text			null,
-	Is_Correct			boolean			null,
+	Is_Correct			int				null,
 	Created_Time 		timestamp 		null,
 	Updated_Time		timestamp		null,
 	Is_Deleted			int				null
