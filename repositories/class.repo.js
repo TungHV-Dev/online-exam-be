@@ -17,6 +17,17 @@ const getClassById = async (classId) => {
     return response.rows[0]
 }
 
+const getClassByIdV2 = async (classId) => {
+    const querySql = 
+        `select c.*, u.user_name as teacher_user_name, u.full_name as teacher_full_name
+        from "class" c 
+        inner join users u on u.user_id = c.teacher_id
+        where c.class_id = $1::integer and c.is_deleted = 0;`
+    
+    const response = await _postgresDB.query(querySql, [classId])
+    return response.rows[0]
+}
+
 const getClassByClassCode = async (classCode) => {
     const querySql = 
         `select * from "class" where class_code = $1::text and is_deleted = 0;`
@@ -80,6 +91,7 @@ const getClassListUserJoined = async (userId) => {
 module.exports = {
     insertClass,
     getClassById,
+    getClassByIdV2,
     getClassByClassCode,
     checkUserExistInClass,
     addUserToClass,

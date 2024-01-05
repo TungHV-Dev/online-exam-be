@@ -98,17 +98,17 @@ router.post('/join', async (req, res) => {
 router.get('/detail', async (req, res) => {
     try {
         const result = await classService.getClassDetail(req.query)
-        if (result) {
+        if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
+                data: result.data
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
         console.log('Exception at router /class/detail: ', e?.message)

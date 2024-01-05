@@ -1,6 +1,7 @@
-const classRepo = require('../repositories/class.repo')
 const { ResponseService } = require('../model/response')
 const constant = require('../utils/constant')
+const classRepo = require('../repositories/class.repo')
+const userRepo = require('../repositories/user.repo')
 
 const getPublishedClassList = async (joined = true, userId) => {
     let classList = []
@@ -55,7 +56,7 @@ const joinPublishedClass = async (data) => {
 
 const getClassDetail = async (data) => {
     const { classId, userId } = data
-    const classExist = await classRepo.getClassById(classId)
+    const classExist = await classRepo.getClassByIdV2(classId)
     if (!classExist) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
     }
@@ -67,11 +68,13 @@ const getClassDetail = async (data) => {
 
     let result = {
         classCode: classExist.class_code,
-        
+        teacherName: `${classExist.teacher_full_name} (${classExist.teacher_user_name})`,
+        description: classExist.description,
     }
 
-
-
+    const students = await userRepo.getStudentsByClassId(classId)
+    result.students = students
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
 const addDocument = async () => {
