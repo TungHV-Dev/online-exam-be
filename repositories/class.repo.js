@@ -142,6 +142,31 @@ const getListExamCreatedPaging = async (classId, offset = 0, limit = 10) => {
     }
 }
 
+const getDocumentListPaging = async (classId, offset = 0, limit = 10) => {
+    const querySql = 
+        `select document_id, file_name, file_path 
+        from class_document
+        where class_id = $1::integer and is_deleted = 0
+        order by file_name 
+        offset $2::integer
+        limit $3::integer;`
+
+    const totalSql = 
+        `select count(document_id) as total
+        from class_document
+        where class_id = $1::integer and is_deleted = 0;`
+
+    const resultPaging = await Promise.all([
+        _postgresDB.query(querySql, [classId, offset, limit]),
+        _postgresDB.query(totalSql, [classId]),
+    ])
+            
+    return {
+        data: resultPaging[0].rows,
+        total: Number(resultPaging[1].rows[0]?.total || 0)
+    }
+}
+
 module.exports = {
     insertClass,
     getClassById,
@@ -152,5 +177,6 @@ module.exports = {
     getClassListUserNotJoin,
     getClassListUserJoined,
     getListExamNeedDonePaging,
-    getListExamCreatedPaging
+    getListExamCreatedPaging,
+    getDocumentListPaging
 }
