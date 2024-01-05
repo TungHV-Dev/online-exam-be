@@ -143,6 +143,30 @@ router.get('/exam/need-done', async (req, res) => {
     }
 })
 
+router.get('/exam/created-list', async (req, res) => {
+    try {
+        const result = await classService.getListExamCreated(req.query)
+        if (result.resultCode === 0) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result.data
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
+        })
+    } catch (e) {
+        console.log('Exception at router /class/exam/created-list: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
 
 
 module.exports = router
