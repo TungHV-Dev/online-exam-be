@@ -106,6 +106,17 @@ const lockUser = async (userId, lock) => {
     return response
 }
 
+const getStudentsByClassId = async (classId) => {
+    const querySql = 
+        `select u.user_id, u.user_name , u.full_name 
+        from user_class uc 
+        inner join users u on u.user_id = uc.user_id and uc.is_deleted = 0
+        where uc.class_id = $1::integer and u.is_deleted = 0 and u.is_locked = 0;`
+    
+    const response = await _postgresDB.query(querySql, [classId])
+    return response.rows
+}
+
 module.exports = {
     getUsers,
     insertUser,
@@ -113,5 +124,6 @@ module.exports = {
     getUserByEmail,
     getUserByIdAndName,
     getUsersPaging,
-    lockUser
+    lockUser,
+    getStudentsByClassId
 }

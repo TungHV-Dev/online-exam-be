@@ -98,17 +98,17 @@ router.post('/join', async (req, res) => {
 router.get('/detail', async (req, res) => {
     try {
         const result = await classService.getClassDetail(req.query)
-        if (result) {
+        if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
+                data: result.data
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
         console.log('Exception at router /class/detail: ', e?.message)
@@ -119,23 +119,23 @@ router.get('/detail', async (req, res) => {
     }
 })
 
-router.post('/add-document', async (req, res) => {
+router.get('/document-list', async (req, res) => {
     try {
-        const result = await classService.addDocument()
-        if (result) {
+        const result = await classService.getDocumentList(req.query)
+        if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
+                data: result.data
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/join: ', e?.message)
+        console.log('Exception at router /class/document-list: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -143,23 +143,23 @@ router.post('/add-document', async (req, res) => {
     }
 })
 
-router.get('/exam/list', async (req, res) => {
+router.get('/exam/need-done', async (req, res) => {
     try {
-        const result = await classService.getExamList()
-        if (result) {
+        const result = await classService.getListExamNeedDone(req.query)
+        if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
+                data: result.data
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/list: ', e?.message)
+        console.log('Exception at router /class/exam/need-done: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -167,95 +167,23 @@ router.get('/exam/list', async (req, res) => {
     }
 })
 
-router.get('/exam/view', async (req, res) => {
+router.get('/exam/created-list', async (req, res) => {
     try {
-        const result = await classService.viewExam()
-        if (result) {
+        const result = await classService.getListExamCreated(req.query)
+        if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
+                data: result.data
             })
         }
 
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
-        })
-    } catch (e) {
-        console.log('Exception at router /class/exam/view: ', e?.message)
-        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
-            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
-        })
-    }
-})
-
-router.post('/exam/create', async (req, res) => {
-    try {
-        const result = await classService.createExam()
-        if (result) {
-            return res.status(constant.HTTP_STATUS_CODE.OK).json({
-                code: constant.RESPONSE_CODE.SUCCESS,
-                message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
-            })
-        }
-
-        return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/create: ', e?.message)
-        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
-            code: constant.RESPONSE_CODE.FAIL,
-            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
-        })
-    }
-})
-
-router.post('/exam/update', async (req, res) => {
-    try {
-        const result = await classService.createExam()
-        if (result) {
-            return res.status(constant.HTTP_STATUS_CODE.OK).json({
-                code: constant.RESPONSE_CODE.SUCCESS,
-                message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
-            })
-        }
-
-        return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
-        })
-    } catch (e) {
-        console.log('Exception at router /class/exam/update: ', e?.message)
-        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
-            code: constant.RESPONSE_CODE.FAIL,
-            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
-        })
-    }
-})
-
-router.post('/exam/join', async (req, res) => {
-    try {
-        const result = await classService.joinExam()
-        if (result) {
-            return res.status(constant.HTTP_STATUS_CODE.OK).json({
-                code: constant.RESPONSE_CODE.SUCCESS,
-                message: constant.RESPONSE_MESSAGE.SUCCESS,
-                data: result
-            })
-        }
-
-        return res.status(constant.HTTP_STATUS_CODE.OK).json({
-            code: constant.RESPONSE_CODE.NOT_FOUND,
-            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
-        })
-    } catch (e) {
-        console.log('Exception at router /class/exam/join: ', e?.message)
+        console.log('Exception at router /class/exam/created-list: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
