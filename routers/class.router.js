@@ -3,8 +3,10 @@ const router = express.Router()
 const constant = require('../utils/constant')
 const classService = require('../services/class.service')
 const classValidator = require('../validation/class.validator')
+const { verifyToken } = require('../middleware/jwt.middleware')
+const { verifyRole } = require('../middleware/role.middleware')
 
-router.get('/not-join-list', async (req, res) => {
+router.get('/not-join-list', [verifyToken], async (req, res) => {
     try {
         const userId = req.query.userId
         const result = await classService.getPublishedClassList(false, userId)
@@ -22,7 +24,7 @@ router.get('/not-join-list', async (req, res) => {
     }
 })
 
-router.get('/joined-list', async (req, res) => {
+router.get('/joined-list', [verifyToken], async (req, res) => {
     try {
         const userId = req.query.userId
         const result = await classService.getPublishedClassList(true, userId)
@@ -40,7 +42,7 @@ router.get('/joined-list', async (req, res) => {
     }
 })
 
-router.post('/create', async (req, res) => {
+router.post('/create', [verifyToken], async (req, res) => {
     try {
         const payload = req.body
         const validatiton = classValidator.createClassValidator(payload)
@@ -72,7 +74,7 @@ router.post('/create', async (req, res) => {
     }
 })
 
-router.post('/join', async (req, res) => {
+router.post('/join', [verifyToken], async (req, res) => {
     try {
         const result = await classService.joinPublishedClass(req.body)
         if (result.resultCode == 0) {
@@ -95,9 +97,9 @@ router.post('/join', async (req, res) => {
     }
 })
 
-router.get('/detail', async (req, res) => {
+router.get('/detail', [verifyToken], async (req, res) => {
     try {
-        const result = await classService.getClassDetail(req.query)
+        const result = await classService.getClassDetail(req.query, req.roleId)
         if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
@@ -119,7 +121,7 @@ router.get('/detail', async (req, res) => {
     }
 })
 
-router.get('/document-list', async (req, res) => {
+router.get('/document-list', [verifyToken], async (req, res) => {
     try {
         const result = await classService.getDocumentList(req.query)
         if (result.resultCode === 0) {
@@ -143,7 +145,7 @@ router.get('/document-list', async (req, res) => {
     }
 })
 
-router.post('/add-document', async (req, res) => {
+router.post('/add-document', [verifyToken], async (req, res) => {
     try {
         const result = await classService.addDocument(req.body)
         if (result.resultCode === 0) {
@@ -166,7 +168,7 @@ router.post('/add-document', async (req, res) => {
     }
 })
 
-router.get('/exam/need-done', async (req, res) => {
+router.get('/exam/need-done', [verifyToken], async (req, res) => {
     try {
         const result = await classService.getListExamNeedDone(req.query)
         if (result.resultCode === 0) {
@@ -190,7 +192,7 @@ router.get('/exam/need-done', async (req, res) => {
     }
 })
 
-router.get('/exam/created-list', async (req, res) => {
+router.get('/exam/created-list', [verifyToken], async (req, res) => {
     try {
         const result = await classService.getListExamCreated(req.query)
         if (result.resultCode === 0) {

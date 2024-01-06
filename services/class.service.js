@@ -2,6 +2,7 @@ const { ResponseService } = require('../model/response')
 const constant = require('../utils/constant')
 const classRepo = require('../repositories/class.repo')
 const userRepo = require('../repositories/user.repo')
+const MASTER_DATA = require('../utils/master-data')
 
 const getPublishedClassList = async (joined = true, userId) => {
     let classList = []
@@ -54,16 +55,18 @@ const joinPublishedClass = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 
-const getClassDetail = async (data) => {
+const getClassDetail = async (data, roleId) => {
     const { classId, userId } = data
     const classExist = await classRepo.getClassByIdV2(classId)
     if (!classExist) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
     }
 
-    const userExist = await classRepo.checkUserExistInClass(classId, userId)
-    if (!userExist) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+    if (roleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        const userExist = await classRepo.checkUserExistInClass(classId, userId)
+        if (!userExist) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+        }
     }
 
     let result = {
@@ -77,7 +80,7 @@ const getClassDetail = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
-const getListExamNeedDone = async (data) => {
+const getListExamNeedDone = async (data, roleId) => {
     const { classId, userId, page, size } = data
 
     const classExist = await classRepo.getClassById(classId)
@@ -85,9 +88,11 @@ const getListExamNeedDone = async (data) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
     }
 
-    const userExist = await classRepo.checkUserExistInClass(classId, userId)
-    if (!userExist) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+    if (roleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        const userExist = await classRepo.checkUserExistInClass(classId, userId)
+        if (!userExist) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+        }
     }
 
     const limit = size
@@ -97,7 +102,7 @@ const getListExamNeedDone = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', exams)
 }
 
-const getListExamCreated = async (data) => {
+const getListExamCreated = async (data, roleId) => {
     const { classId, userId, page, size } = data
 
     const classExist = await classRepo.getClassById(classId)
@@ -105,9 +110,11 @@ const getListExamCreated = async (data) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
     }
 
-    const userExist = await classRepo.checkUserExistInClass(classId, userId)
-    if (!userExist) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+    if (roleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        const userExist = await classRepo.checkUserExistInClass(classId, userId)
+        if (!userExist) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+        }
     }
 
     const limit = size
@@ -117,7 +124,7 @@ const getListExamCreated = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', exams)
 }
 
-const getDocumentList = async (data) => {
+const getDocumentList = async (data, roleId) => {
     const { classId, userId, page, size } = data
 
     const classExist = await classRepo.getClassById(classId)
@@ -125,9 +132,11 @@ const getDocumentList = async (data) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
     }
 
-    const userExist = await classRepo.checkUserExistInClass(classId, userId)
-    if (!userExist) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+    if (roleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        const userExist = await classRepo.checkUserExistInClass(classId, userId)
+        if (!userExist) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
+        }
     }
 
     const limit = size

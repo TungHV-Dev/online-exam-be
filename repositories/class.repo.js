@@ -182,7 +182,7 @@ const insertClassDocument = async (classId, fileName, filePath) => {
         returning document_id;`
 
     const response = await _postgresDB.query(commandSql, [classId, fileName, filePath])
-    return response.rows
+    return response
 }
 
 module.exports = {
