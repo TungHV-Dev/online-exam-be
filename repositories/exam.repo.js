@@ -53,9 +53,31 @@ const insertResults = async (results) => {
     return response
 }
 
+const deleteExam = async (examId) => {
+    const commandSql = `update exam set is_deleted = 1 where exam_id = $1::integer;`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response
+}
+
+const deleteQuestions = async (examId) => {
+    const commandSql = `update questions set is_deleted = 1 where exam_id = $1::integer;`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response
+}
+
+const deleteResults = async (examId) => {
+    const commandSql = 
+        `update results set is_deleted = 1 where question_id in (select question_id from questions where exam_id = $1::integer);`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response
+}
+
 
 module.exports = {
     insertExam,
     insertQuestions,
-    insertResults
+    insertResults,
+    deleteExam,
+    deleteQuestions,
+    deleteResults
 }

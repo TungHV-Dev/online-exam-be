@@ -216,7 +216,7 @@ router.get('/exam/created-list', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/create-exam', [verifyToken], async (req, res) => {
+router.post('/exam/create', [verifyToken], async (req, res) => {
     try {
         const payload = req.body
 
@@ -228,7 +228,7 @@ router.post('/create-exam', [verifyToken], async (req, res) => {
             })
         }
 
-        const result = await classService.createExam(payload)
+        const result = await classService.createExam(payload, req.roleId)
         if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
@@ -242,6 +242,30 @@ router.post('/create-exam', [verifyToken], async (req, res) => {
         })
     } catch (e) {
         console.log('Exception at router /class/create-exam: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
+router.post('/exam/delete', [verifyToken], async (req, res) => {
+    try {
+        const payload = req.body
+        const result = await classService.deleteExam(payload, req.roleId)
+        if (result.resultCode === 0) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
+        })
+    } catch (e) {
+        console.log('Exception at router /class/exam/delete: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR

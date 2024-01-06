@@ -105,18 +105,11 @@ const getListExamNeedDone = async (data, roleId) => {
 }
 
 const getListExamCreated = async (data, roleId) => {
-    const { classId, userId, page, size } = data
+    const { classId, page, size } = data
 
     const classExist = await classRepo.getClassById(classId)
     if (!classExist) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
-    }
-
-    if (roleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
-        const userExist = await classRepo.checkUserExistInClass(classId, userId)
-        if (!userExist) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Học viên chưa tham gia lớp học. Vui lòng kiểm tra lại!')
-        }
     }
 
     const limit = size
@@ -218,6 +211,38 @@ const createExam = async (data, roleId) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
 }
 
+const deleteExam = async (data, roleId) => {
+    const { classId, teacherId, examId } = data
+
+    const classExist = await classRepo.getClassById(classId)
+    if (!classExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    }
+
+    if (roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
+        if (classExist.teacher_id !== teacherId) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Xóa bài thi thất bại. Người dùng không phải giáo viên của lớp học!')
+        }
+    }
+
+    const deletedResult = await examRepo.deleteResults(examId)
+    if (deletedResult.rowCount === 0) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
+
+    const deletedQuestion = await examRepo.deleteQuestions(examId)
+    if (deletedQuestion.rowCount === 0) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
+
+    const deletedExam = await examRepo.deleteExam(examId)
+    if (deletedExam.rowCount === 0) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
+
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
+}
+
 const viewExam = async () => {
 
 }
@@ -236,6 +261,7 @@ module.exports = {
     getListExamCreated,
     addDocument,
     createExam,
+    deleteExam,
     viewExam,
     joinExam
 }
