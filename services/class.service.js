@@ -1,8 +1,9 @@
 const { ResponseService } = require('../model/response')
 const constant = require('../utils/constant')
+const MASTER_DATA = require('../utils/master-data')
 const classRepo = require('../repositories/class.repo')
 const userRepo = require('../repositories/user.repo')
-const MASTER_DATA = require('../utils/master-data')
+const examRepo = require('../repositories/exam.repo')
 
 const getPublishedClassList = async (joined = true, userId) => {
     let classList = []
@@ -147,7 +148,7 @@ const getDocumentList = async (data, roleId) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', documents)
 }
 
-const addDocument = async (data) => {
+const addDocument = async (data, roleId) => {
     const { classId, teacherId, fileName, filePath } = data
 
     const classExist = await classRepo.getClassById(classId)
@@ -155,8 +156,10 @@ const addDocument = async (data) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
     }
 
-    if (classExist.teacher_id !== teacherId) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Thêm tài liệu thất bại. Người dùng không phải giáo viên của lớp học!')
+    if (roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
+        if (classExist.teacher_id !== teacherId) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Thêm tài liệu thất bại. Người dùng không phải giáo viên của lớp học!')
+        }
     }
 
     const insertedResult = await classRepo.insertClassDocument(classId, fileName, filePath)
@@ -167,8 +170,52 @@ const addDocument = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 
-const createExam = async () => {
+const createExam = async (data, roleId) => {
+    const { classId, examName, description, totalMinutes, publish, questions, teacherId } = data
 
+    const classExist = await classRepo.getClassById(classId)
+    if (!classExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    }
+
+    if (roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
+        if (classExist.teacher_id !== teacherId) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Tạo bài thi thất bại. Người dùng không phải giáo viên của lớp học!')
+        }
+    }
+
+    const insertExamResult = await examRepo.insertExam(classId, examName, description, questions.length, totalMinutes, Number(publish))
+    if (insertExamResult.rowCount === 0 || !insertExamResult.rows[0].exam_id) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
+
+    if (questions.length > 0) {
+        const examId = Number(insertExamResult.rows[0].exam_id)
+        const insertQuestionResult = await examRepo.insertQuestions(examId, questions)
+        if (insertQuestionResult.rowCount !== questions.length) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+        }
+
+        const questionIds = insertQuestionResult.rows
+        let resultList = []
+
+        for (let i = 0; i < questions.length; i++) {
+            const questionId = questionIds[i].question_id
+            const questionResults = questions[i]?.results?.map(result => {
+                result.questionId = questionId
+                result.isCorrect = Number(result.isCorrect)
+                return result
+            })
+            resultList.push(...questionResults)
+        }
+
+        const insertResult = await examRepo.insertResults(resultList)
+        if (insertResult.rowCount !== resultList.length) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+        }
+    }
+
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
 }
 
 const viewExam = async () => {
