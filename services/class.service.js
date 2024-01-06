@@ -71,6 +71,7 @@ const getClassDetail = async (data, roleId) => {
 
     let result = {
         classCode: classExist.class_code,
+        className: classExist.class_name,
         teacherName: `${classExist.teacher_full_name} (${classExist.teacher_user_name})`,
         description: classExist.description,
     }
