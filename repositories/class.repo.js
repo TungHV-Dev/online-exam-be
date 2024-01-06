@@ -28,6 +28,14 @@ const getClassByIdV2 = async (classId) => {
     return response.rows[0]
 }
 
+const getClassByClassIdAndTeacherId = async (classId, teacherId) => {
+    const querySql = 
+        `select * from "class" where class_id = $1::integer and teacher_id = $2::integer and is_deleted = 0;`
+    
+    const response = await _postgresDB.query(querySql, [classId, teacherId])
+    return response.rows[0]
+}
+
 const getClassByClassCode = async (classCode) => {
     const querySql = 
         `select * from "class" where class_code = $1::text and is_deleted = 0;`
@@ -167,10 +175,21 @@ const getDocumentListPaging = async (classId, offset = 0, limit = 10) => {
     }
 }
 
+const insertClassDocument = async (classId, fileName, filePath) => {
+    const commandSql = 
+        `insert into class_document (class_id, file_name, file_path, created_time, updated_time, is_deleted)
+        values ($1::integer, $2::text, $3::text, now(), now(), 0)
+        returning document_id;`
+
+    const response = await _postgresDB.query(commandSql, [classId, fileName, filePath])
+    return response.rows
+}
+
 module.exports = {
     insertClass,
     getClassById,
     getClassByIdV2,
+    getClassByClassIdAndTeacherId,
     getClassByClassCode,
     checkUserExistInClass,
     addUserToClass,
@@ -178,5 +197,6 @@ module.exports = {
     getClassListUserJoined,
     getListExamNeedDonePaging,
     getListExamCreatedPaging,
-    getDocumentListPaging
+    getDocumentListPaging,
+    insertClassDocument
 }

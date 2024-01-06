@@ -137,8 +137,24 @@ const getDocumentList = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', documents)
 }
 
-const addDocument = async () => {
+const addDocument = async (data) => {
+    const { classId, teacherId, fileName, filePath } = data
 
+    const classExist = await classRepo.getClassById(classId)
+    if (!classExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    }
+
+    if (classExist.teacher_id !== teacherId) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Thêm tài liệu thất bại. Người dùng không phải giáo viên của lớp học!')
+    }
+
+    const insertedResult = await classRepo.insertClassDocument(classId, fileName, filePath)
+    if (insertedResult.rowCount > 0 && insertedResult.rows[0].document_id) {
+        return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
+    }
+
+    return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 
 const createExam = async () => {

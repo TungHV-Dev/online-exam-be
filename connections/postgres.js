@@ -16,7 +16,7 @@ function createConnectionPool() {
             console.log(`Error connect to postgres DB: ${credentials.host}:${credentials.port}`)
             throw err
         } else {
-            console.log(`Postgres DB connected at: ${credentials.port}`)
+            console.log(`Postgres DB connected at port: ${credentials.port}`)
             global._postgresDB = client
         }
     })
