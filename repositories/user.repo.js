@@ -117,6 +117,12 @@ const getStudentsByClassId = async (classId) => {
     return response.rows
 }
 
+const updatePasswordUser = async (userId, newPassword) => {
+    const commandSql = `update users set password_hash = $1::text where user_id = $2::integer and is_deleted = 0;`
+    const response = await _postgresDB.query(commandSql, [newPassword, userId])
+    return response
+}
+
 module.exports = {
     getUsers,
     insertUser,
@@ -124,6 +130,7 @@ module.exports = {
     getUserByEmail,
     getUserByIdAndName,
     getUsersPaging,
+    getStudentsByClassId,
     lockUser,
-    getStudentsByClassId
+    updatePasswordUser,
 }

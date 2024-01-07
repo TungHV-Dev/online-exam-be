@@ -7,7 +7,7 @@ const authenValidator = require('../validation/authentication.validator')
 const authenService = require('../services/authentication.service')
 
 
-router.post('/register', [verifyToken], async (req, res) => {
+router.post('/register', [verifyToken, verifyRole('view_admin_tab')], async (req, res) => {
     try {
         const registerData = req.body
         const validatiton = authenValidator.registerValidator(registerData)
@@ -65,6 +65,38 @@ router.post('/login', async (req, res) => {
         })
     } catch (e) {
         console.log('Exception at router /auth/login: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
+router.post('/reset-password', [verifyToken, verifyRole('view_admin_tab')], async (req, res) => {
+    try {
+        const data = req.body
+        const validatiton = authenValidator.resetPasswordValidator(data)
+        if (!validatiton.valid) {
+            return res.status(constant.HTTP_STATUS_CODE.BAD_REQUEST).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: validatiton.message || constant.RESPONSE_MESSAGE.INPUT_INVALID
+            })
+        }
+
+        const response = await authenService.resetPassword(data)
+        if (response.resultCode === constant.RESPONSE_CODE.FAIL) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: response.message || constant.RESPONSE_MESSAGE.FAIL,
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.SUCCESS,
+            message: constant.RESPONSE_MESSAGE.SUCCESS,
+        })
+    } catch (e) {
+        console.log('Exception at router /auth/reset-password: ', e?.message)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR

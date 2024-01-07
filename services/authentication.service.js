@@ -94,7 +94,32 @@ const login = async (data) => {
     }
 }
 
+const resetPassword = async (data) => {
+    try {
+        const { username, newPassword } = data
+        // Kiểm tra xem user có tồn tại hay không
+        const user = await userRepo.getUserByUsername(username)
+        if (!user) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không tồn tại trong hệ thống!')
+        }
+
+        // Tạo mật khẩu mã hóa và lưu thông tin user
+        const saltRounds = 10
+        const passwordHash = bcrypt.hashSync(newPassword, saltRounds)
+
+        const resultUpdate = await userRepo.updatePasswordUser(user.user_id, passwordHash)
+        if (resultUpdate.rowCount === 0) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Cập nhật mật khẩu thất bại')
+        }
+
+        return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
+    } catch (err) {
+        throw err
+    }
+}
+
 module.exports = {
     registerUser,
-    login
+    login,
+    resetPassword
 }
