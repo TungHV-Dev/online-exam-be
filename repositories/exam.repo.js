@@ -60,18 +60,55 @@ const deleteExam = async (examId) => {
 }
 
 const deleteQuestions = async (examId) => {
-    const commandSql = `update questions set is_deleted = 1 where exam_id = $1::integer;`
+    const commandSql = `delete from questions where exam_id = $1::integer;`
     const response = await _postgresDB.query(commandSql, [examId])
     return response
 }
 
 const deleteResults = async (examId) => {
     const commandSql = 
-        `update results set is_deleted = 1 where question_id in (select question_id from questions where exam_id = $1::integer);`
+        `delete from results where question_id in (select question_id from questions where exam_id = $1::integer);`
     const response = await _postgresDB.query(commandSql, [examId])
     return response
 }
 
+const updateExam = async (examId, examName, description, totalQuestion, totalMinutes, publish) => {
+    const commandSql = 
+        `update exam 
+        set 
+            exam_name = $1::text, description = $2::text, total_question = $3::integer, 
+            total_minutes = $4::integer, is_published = $5::integer, updated_time = now()
+        where exam_id = $6::integer;`
+    
+    const response = await _postgresDB.query(commandSql, [examName, description, totalQuestion, totalMinutes, publish, examId])
+    return response
+}
+
+const getExamById = async (examId) => {
+    const commandSql = `select * from exam where exam_id = $1::integer and is_deleted = 0;`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response.rows[0]
+}
+
+const getQuestionsByExamId = async (examId) => {
+    const commandSql = 
+        `select * from questions where exam_id = $1::integer and is_deleted = 0
+        order by question_number`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response.rows
+}
+
+const getResultsByExamId = async (examId) => {
+    const commandSql = 
+        `select * from results r
+        where 
+            r.question_id in (
+                select q.question_id from questions q where q.exam_id = $1::integer and q.is_deleted = 0
+            ) and r.is_deleted = 0
+        order by r.question_id, r.result_key asc;`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response.rows
+}
 
 module.exports = {
     insertExam,
@@ -79,5 +116,9 @@ module.exports = {
     insertResults,
     deleteExam,
     deleteQuestions,
-    deleteResults
+    deleteResults,
+    updateExam,
+    getExamById,
+    getQuestionsByExamId,
+    getResultsByExamId
 }
