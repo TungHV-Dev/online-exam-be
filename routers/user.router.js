@@ -103,6 +103,28 @@ router.post('/lock', [verifyToken], async (req, res) => {
     }
 })
 
+router.post('/update-infor', [verifyToken], async (req, res) => {
+    try {
+        const result = await userService.updateUserInfor(req.body)
+        if (result.resultCode === 0) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
+        })
+    } catch (e) {
+        console.log('Exception at router /user/update-infor: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
 
 
 module.exports = router

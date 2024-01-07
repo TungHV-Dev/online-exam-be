@@ -61,7 +61,8 @@ const getUserByIdAndName = async (userId, userName) => {
 const getUsersPaging = async (searchValue, offsetValue = 0, limitValue = 10) => {
     const querySql = 
         `select 
-            u.user_id, u.user_name, u.full_name, r.role_id, r.role_name, u.date_of_birth, u.email, u.phone_number, u.is_locked
+            u.user_id, u.user_name, u.full_name, r.role_id, r.role_name, u.full_name, 
+            u.gender, u.date_of_birth, u.email, u.phone_number, u.address, u.is_locked
         from users u
         left join roles r on r.role_id = u.role_id
         where 
@@ -123,6 +124,17 @@ const updatePasswordUser = async (userId, newPassword) => {
     return response
 }
 
+const updateUserInfor = async (fullName, roleId, dateOfBirth, gender, email, phoneNumber, address, userId) => {
+    const commandSql = 
+        `update users 
+        set 
+            full_name = $1::text, role_id = $2::integer, date_of_birth = $3::text, 
+            gender = $4::text, email = $5::text, phone_number = $6::text, address = $7::text 
+        where user_id = $8::integer and is_deleted = 0;`
+    const response = await _postgresDB.query(commandSql, [fullName, roleId, dateOfBirth, gender, email, phoneNumber, address, userId])
+    return response
+}
+
 module.exports = {
     getUsers,
     insertUser,
@@ -133,4 +145,5 @@ module.exports = {
     getStudentsByClassId,
     lockUser,
     updatePasswordUser,
+    updateUserInfor
 }

@@ -74,6 +74,7 @@ const login = async (data) => {
         functionList.map(func => {
             functionCodes.push(func.function_code)
         })
+        // Tạo payload của JWT token
         const claim = {
             userId: user.user_id,
             userName: user.user_name,

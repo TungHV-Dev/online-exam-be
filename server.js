@@ -9,10 +9,11 @@ const postgresConnection = require('./connections/postgres')
 postgresConnection.createConnectionPool()
 
 const bodyParser = require('body-parser')
-const port = Number(process.env.PORT || 9032)
+const port = Number(process.env.PORT || 9000)
 
 const app = express()
 
+// Cấu hình server
 app.use(express.json())
 app.use(bodyParser.json())
 app.use(bodyParser.json({ limit: process.env.SIZE_FILE_LIMIT }))
@@ -31,6 +32,7 @@ app.use(cors({
     optionsSuccessStatus: 200
 }))
 
+// Cấu hình router API
 const dashboardApi = require('./routers/dashboard.router')
 const classApi = require('./routers/class.router')
 const userApi = require('./routers/user.router')

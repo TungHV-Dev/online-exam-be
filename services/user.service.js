@@ -36,9 +36,35 @@ const lockUser = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
 }
 
+const updateUserInfor = async (data) => {
+    const { userId, userName, fullName, roleId, dateOfBirth, gender, email, phoneNumber, address } = data
+
+    let userExist = null
+
+    // Kiểm tra xem người dùng có tồn tại trong hệ thống hay không
+    userExist = await userRepo.getUserByIdAndName(userId, userName)
+    if (!userExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không tồn tại hoặc đã bị xóa khỏi hệ thống!')
+    }
+
+    // Kiểm tra xem email mới đã có trong hệ thống và thuộc về người dùng khác hay không
+    userExist = await userRepo.getUserByEmail(email)
+    if (userExist && userExist.user_id !== userId) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Email đã tồn tại trong hệ thống!')
+    }
+
+    const updateResult = await userRepo.updateUserInfor(fullName, roleId, dateOfBirth, gender, email, phoneNumber, address, userId)
+    if (updateResult.rowCount === 0) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
+
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
+}
+
 module.exports = {
     getAllTeacher,
     getAllRoles,
     searchUsers,
-    lockUser
+    lockUser,
+    updateUserInfor
 }
