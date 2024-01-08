@@ -9,7 +9,7 @@ const { verifyRole } = require('../middleware/role.middleware')
 router.get('/not-join-list', [verifyToken], async (req, res) => {
     try {
         const userId = req.query.userId
-        const result = await classService.getPublishedClassList(false, userId)
+        const result = await classService.getPublishedClassList(false, userId, req.roleId)
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
             code: constant.RESPONSE_CODE.SUCCESS,
             message: constant.RESPONSE_MESSAGE.SUCCESS,
@@ -27,7 +27,7 @@ router.get('/not-join-list', [verifyToken], async (req, res) => {
 router.get('/joined-list', [verifyToken], async (req, res) => {
     try {
         const userId = req.query.userId
-        const result = await classService.getPublishedClassList(true, userId)
+        const result = await classService.getPublishedClassList(true, userId, req.roleId)
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
             code: constant.RESPONSE_CODE.SUCCESS,
             message: constant.RESPONSE_MESSAGE.SUCCESS,

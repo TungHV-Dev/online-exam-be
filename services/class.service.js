@@ -5,13 +5,17 @@ const classRepo = require('../repositories/class.repo')
 const userRepo = require('../repositories/user.repo')
 const examRepo = require('../repositories/exam.repo')
 
-const getPublishedClassList = async (joined = true, userId) => {
+const getPublishedClassList = async (joined = true, userId, roleId) => {
     let classList = []
 
     if (joined === true) {
         classList = await classRepo.getClassListUserJoined(userId)
     } else {
-        classList = await classRepo.getClassListUserNotJoin(userId)
+        let _userId = userId
+        if (roleId === MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
+            _userId = 0
+        }
+        classList = await classRepo.getClassListUserNotJoin(_userId)
     }
     
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', classList)
