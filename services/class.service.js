@@ -485,9 +485,11 @@ const submitExamResult = async (data, userId) => {
     }
 
     const userExamId = insertResult1.rows[0].id
-    const insertResult2 = await examRepo.insertUserExamQuestion(userExamId, userResultInsert)
-    if (insertResult2.rowCount !== userResultInsert.length) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    if (userResultInsert.length > 0) {
+        const insertResult2 = await examRepo.insertUserExamQuestion(userExamId, userResultInsert)
+        if (insertResult2.rowCount !== userResultInsert.length) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+        }
     }
 
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', {
