@@ -240,6 +240,30 @@ router.get('/exam/infor', [verifyToken], async (req, res) => {
     }
 })
 
+router.get('/exam/infor-for-student', [verifyToken], async (req, res) => {
+    try {
+        const result = await classService.viewExamByStudent(req.query, req.userId)
+        if (result.resultCode === 0) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result.data
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
+        })
+    } catch (e) {
+        console.log('Exception at router /class/exam/infor-for-student: ', e?.message)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
 router.post('/exam/create', [verifyToken], async (req, res) => {
     try {
         const payload = req.body
@@ -340,6 +364,7 @@ router.post('/exam/submit-result', [verifyToken], async (req, res) => {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result.data
             })
         }
 

@@ -14,7 +14,7 @@ const getDashboardSummaryData = async () => {
             if (nearestJoinedExamData[index]) {
                 chartData.push({
                     label: nearestJoinedExamData[index].exam_date,
-                    y: nearestJoinedExamData[index].joined_exam_number
+                    y: Number(nearestJoinedExamData[index].joined_exam_number)
                 })
             } else {
                 chartData.push({

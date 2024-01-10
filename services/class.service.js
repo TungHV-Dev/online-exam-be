@@ -344,6 +344,76 @@ const viewExam = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
+const viewExamByStudent = async (data, userId) => {
+    const { examId, classId, actionType } = data
+
+    const classExist = await classRepo.getClassById(classId)
+    if (!classExist) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    }
+
+    const exam = await examRepo.getExamById(examId)
+    if (!exam) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Bài thi không tồn tại hoặc đã bị xóa khỏi hệ thống!')
+    }
+
+    const questions = await examRepo.getQuestionsByExamId(examId)
+    const results = await examRepo.getResultsByExamId(examId)
+    const userExam = await examRepo.getUserExam(userId, classId, examId)
+    const userResults = await examRepo.getUserExamQuestion(userExam?.id || 0)
+
+    let result = {
+        examId,
+        examName: exam.exam_name,
+        description: exam.description,
+        totalMinutes: exam.total_minutes,
+        score: Number(userExam?.score || 0).toFixed(2)
+    }
+
+    let questionList = []
+    for (const question of questions) {
+        let questionItem = {
+            questionNumber: question.question_number,
+            questionType: question.question_type,
+            questionContent: question.question_content
+        }
+
+        let resultList = null
+        if (actionType === 'view') {
+            const userResultForQuestion = userResults?.filter(x => x.question_id === question.question_id)
+            const userResultMap = new Map()
+            for (const rs of userResultForQuestion) {
+                userResultMap.set(Number(rs.choosed_result_key), rs.choosed_result_value)
+            }
+
+            resultList = results?.filter(x => x.question_id === question.question_id)?.sort((a, b) => a.result_key - b.result_key)?.map(x => {
+                return {
+                    resultKey: x.result_key,
+                    resultValue: x.result_value,
+                    isCorrect: Boolean(x.is_correct),
+                    userChoosed: userResultMap.has(Number(x.result_key)) ? true : false,
+                    userResult: userResultMap.get(Number(x.result_key)) || ''
+                }
+            })
+        } else {
+            resultList = results?.filter(x => x.question_id === question.question_id)?.sort((a, b) => a.result_key - b.result_key)?.map(x => {
+                return {
+                    resultKey: x.result_key,
+                    resultValue: x.result_value,
+                    isCorrect: false,
+                    userChoosed: false,
+                    userResult: ''
+                }
+            })
+        }
+        
+        questionItem.results = resultList
+        questionList.push(questionItem)
+    }
+    result.questions = questionList
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
+}
+
 const submitExamResult = async (data, userId) => {
     const { examId, startTime, endTime, questionResults } = data
 
@@ -420,7 +490,9 @@ const submitExamResult = async (data, userId) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
 
-    return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', {
+        score: totalScore
+    })
 }
 
 module.exports = {
@@ -436,5 +508,6 @@ module.exports = {
     updateExam,
     deleteExam,
     viewExam,
+    viewExamByStudent,
     submitExamResult
 }

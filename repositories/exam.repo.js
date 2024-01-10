@@ -139,6 +139,22 @@ const insertUserExamQuestion = async (userExamId, userResults) => {
     return response
 }
 
+const getUserExam = async (userId, classId, examId) => {
+    const querySql = 
+        `select * from user_exam ue
+        where ue.user_id = $1::integer and ue.class_id = $2::integer and ue.exam_id = $3::integer and ue.is_deleted = 0;`
+    const response = await _postgresDB.query(querySql, [userId, classId, examId])
+    return response.rows[0]
+}
+
+const getUserExamQuestion = async (userExamId) => {
+    const querySql = 
+        `select * from user_exam_question ueq 
+        where ueq.user_exam_id = $1::integer;`
+    const response = await _postgresDB.query(querySql, [userExamId])
+    return response.rows
+}
+
 module.exports = {
     insertExam,
     insertQuestions,
@@ -151,5 +167,7 @@ module.exports = {
     getQuestionsByExamId,
     getResultsByExamId,
     insertUserExam,
-    insertUserExamQuestion
+    insertUserExamQuestion,
+    getUserExam,
+    getUserExamQuestion
 }
