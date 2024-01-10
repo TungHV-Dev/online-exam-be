@@ -80,10 +80,11 @@ create table exam (
 );
 
 create table user_exam_question (
-	Id					serial			not null primary key,
-	User_Exam_Id		int				null,
-	Question_Id			int				null,
-	Choosed_Result_Key	int				null
+	Id						serial			not null primary key,
+	User_Exam_Id			int				null,
+	Question_Id				int				null,
+	Choosed_Result_Key		int				null,
+	Choosed_Result_Value 	text 			null
 );
 
 create table questions (

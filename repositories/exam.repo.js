@@ -85,29 +85,46 @@ const updateExam = async (examId, examName, description, totalQuestion, totalMin
 }
 
 const getExamById = async (examId) => {
-    const commandSql = `select * from exam where exam_id = $1::integer and is_deleted = 0;`
-    const response = await _postgresDB.query(commandSql, [examId])
+    const querySql = `select * from exam where exam_id = $1::integer and is_deleted = 0;`
+    const response = await _postgresDB.query(querySql, [examId])
     return response.rows[0]
 }
 
 const getQuestionsByExamId = async (examId) => {
-    const commandSql = 
+    const querySql = 
         `select * from questions where exam_id = $1::integer and is_deleted = 0
         order by question_number`
-    const response = await _postgresDB.query(commandSql, [examId])
+    const response = await _postgresDB.query(querySql, [examId])
     return response.rows
 }
 
 const getResultsByExamId = async (examId) => {
-    const commandSql = 
+    const querySql = 
         `select * from results r
         where 
             r.question_id in (
                 select q.question_id from questions q where q.exam_id = $1::integer and q.is_deleted = 0
             ) and r.is_deleted = 0
         order by r.question_id, r.result_key asc;`
-    const response = await _postgresDB.query(commandSql, [examId])
+    const response = await _postgresDB.query(querySql, [examId])
     return response.rows
+}
+
+const insertUserExam = async (userId, classId, examId, startTime, endTime, score) => {
+    const commandSql = 
+        `insert into user_exam (user_id, class_id, exam_id, start_time, end_time, score, created_time, updated_time, is_deleted)
+        values ($1::integer, $2::integer, $3::integer, $4, $5, $6::integer, now(), now(), 0)
+        returning id;`
+    const response = await _postgresDB.query(commandSql, [userId, classId, examId, startTime, endTime, score])
+    return response
+}
+
+const insertUserExamQuestion = async (userExamId, questionId, resultKey, resultValue) => {
+    const commandSql = 
+        `insert into user_exam_question (user_exam_id, question_id, choosed_result_key, choosed_result_value)
+        values ($1::integer, $2::integer, $3::integer, $4::text);`
+    const response = await _postgresDB.query(commandSql, [userExamId, questionId, resultKey, resultValue])
+    return response
 }
 
 module.exports = {
@@ -120,5 +137,7 @@ module.exports = {
     updateExam,
     getExamById,
     getQuestionsByExamId,
-    getResultsByExamId
+    getResultsByExamId,
+    insertUserExam,
+    insertUserExamQuestion
 }

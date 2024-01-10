@@ -39,6 +39,7 @@ const verifyToken = async (req, res, next) => {
         }
 
         req.roleId = user.role_id
+        req.userId = user.user_id
     } catch (err) {
         console.log('Exception while verify jwt token: ', err?.message)
 

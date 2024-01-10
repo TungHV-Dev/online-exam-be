@@ -344,7 +344,69 @@ const viewExam = async (data) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
-const joinExam = async (data) => {
+const submitExamResult = async (data, userId) => {
+    const { examId, startTime, endTime, questionResults } = data
+
+    const exam = await examRepo.getExamById(examId)
+    if (!exam) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Bài thi không tồn tại hoặc đã bị xóa khỏi hệ thống!')
+    }
+
+    // Tính điểm của bài thi
+    const totalQuestion = Number(exam?.total_question || 0)
+    const scorePerQuestion = 10 / totalQuestion
+    let totalScore = 0
+
+    const questions = await examRepo.getQuestionsByExamId(examId)
+    const results = await examRepo.getResultsByExamId(examId)
+
+    let questionMap = new Map()
+    for (const question of questionResults) {
+        questionMap.set(question.questionNumber, question.results)
+    }
+
+    let userQuestionMap = new Map()
+    for (const question of questions) {
+        let resultMap = new Map()
+        results?.filter(x => x.question_id === question.question_id)?.map(x => {
+            resultMap.set(x.result_key, {
+                resultValue: x.result_value,
+                isCorrect: Boolean(x.is_correct)
+            })
+        })
+
+        let userResults = questionMap.get(question.question_number)
+        let pass = true
+
+        for (const result of userResults) {
+            const examResult = resultMap.get(result.resultKey)
+            
+            if (question.question_type === MASTER_DATA.QUESTION_TYPE.TYPE_3) {
+                if (examResult.resultValue !== result.userResult) {
+                    pass = false
+                }
+            } else {
+                if ((examResult.isCorrect && !result.userChoosed) || (!examResult.isCorrect && result.userChoosed)) {
+                    pass = false
+                }
+            }
+        }
+        
+        if (pass) {
+            totalScore += scorePerQuestion
+        }
+    }
+
+    // Lưu kết quả làm bài
+    const insertResult1 = await examRepo.insertUserExam(userId, exam?.class_id || 0, examId, startTime, endTime, totalScore)
+    if (insertResult1.rowCount === 0 || !insertResult1.rows[0].id) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
+
+    const userExamId = insertResult1.rows[0].id
+
+
+
 
 }
 
@@ -361,5 +423,5 @@ module.exports = {
     updateExam,
     deleteExam,
     viewExam,
-    joinExam
+    submitExamResult
 }

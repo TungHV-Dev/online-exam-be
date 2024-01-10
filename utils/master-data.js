@@ -15,6 +15,11 @@ const MASTER_DATA = {
         TO_DO: 'To do',
         INPROGRESS: 'Inprogress',
         COMPLETED: 'Completed'
+    },
+    QUESTION_TYPE: {
+        TYPE_1: 'Type_1',
+        TYPE_2: 'Type_2',
+        TYPE_3: 'Type_3'
     }
 }
 
