@@ -365,7 +365,7 @@ const submitExamResult = async (data, userId) => {
         questionMap.set(question.questionNumber, question.results)
     }
 
-    let userQuestionMap = new Map()
+    let userResultInsert = []
     for (const question of questions) {
         let resultMap = new Map()
         results?.filter(x => x.question_id === question.question_id)?.map(x => {
@@ -380,14 +380,25 @@ const submitExamResult = async (data, userId) => {
 
         for (const result of userResults) {
             const examResult = resultMap.get(result.resultKey)
-            
             if (question.question_type === MASTER_DATA.QUESTION_TYPE.TYPE_3) {
                 if (examResult.resultValue !== result.userResult) {
                     pass = false
                 }
+                userResultInsert.push({
+                    questionId: question.question_id,
+                    choosedResultKey: result.resultKey,
+                    choosedResultValue: result.userResult
+                })
             } else {
                 if ((examResult.isCorrect && !result.userChoosed) || (!examResult.isCorrect && result.userChoosed)) {
                     pass = false
+                }
+                if (result.userChoosed) {
+                    userResultInsert.push({
+                        questionId: question.question_id,
+                        choosedResultKey: result.resultKey,
+                        choosedResultValue: result.userResult
+                    })
                 }
             }
         }
@@ -398,16 +409,18 @@ const submitExamResult = async (data, userId) => {
     }
 
     // Lưu kết quả làm bài
-    const insertResult1 = await examRepo.insertUserExam(userId, exam?.class_id || 0, examId, startTime, endTime, totalScore)
+    const insertResult1 = await examRepo.insertUserExam(userId, exam?.class_id || 0, examId, startTime, endTime, Number(totalScore.toFixed(2)))
     if (insertResult1.rowCount === 0 || !insertResult1.rows[0].id) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
 
     const userExamId = insertResult1.rows[0].id
+    const insertResult2 = await examRepo.insertUserExamQuestion(userExamId, userResultInsert)
+    if (insertResult2.rowCount !== userResultInsert.length) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
 
-
-
-
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
 }
 
 module.exports = {
