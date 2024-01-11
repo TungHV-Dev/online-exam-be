@@ -53,7 +53,7 @@ router.get('/all-roles', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/search', [verifyToken], async (req, res) => {
+router.get('/search', [verifyToken, verifyRole('view_admin_tab')], async (req, res) => {
     try {
         const page = req.query.page || 0
         const size = req.query.size || 10
@@ -80,7 +80,7 @@ router.get('/search', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/lock', [verifyToken], async (req, res) => {
+router.post('/lock', [verifyToken, verifyRole('view_admin_tab')], async (req, res) => {
     try {
         const result = await userService.lockUser(req.body)
         if (result.resultCode === 0) {
@@ -103,7 +103,7 @@ router.post('/lock', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/update-infor', [verifyToken], async (req, res) => {
+router.post('/update-infor', [verifyToken, verifyRole('view_admin_tab')], async (req, res) => {
     try {
         const result = await userService.updateUserInfor(req.body)
         if (result.resultCode === 0) {

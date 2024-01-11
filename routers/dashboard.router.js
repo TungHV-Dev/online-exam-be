@@ -5,7 +5,7 @@ const dashboardService = require('../services/dashboard.service')
 const { verifyToken } = require('../middleware/jwt.middleware')
 const { verifyRole } = require('../middleware/role.middleware')
 
-router.get('/summary-data', [verifyToken], async (req, res) => {
+router.get('/summary-data', [verifyToken, verifyRole('view_dashboard_tab')], async (req, res) => {
     try {
         const result = await dashboardService.getDashboardSummaryData()
         if (result) {

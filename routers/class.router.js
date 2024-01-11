@@ -6,7 +6,7 @@ const classValidator = require('../validation/class.validator')
 const { verifyToken } = require('../middleware/jwt.middleware')
 const { verifyRole } = require('../middleware/role.middleware')
 
-router.get('/not-join-list', [verifyToken], async (req, res) => {
+router.get('/not-join-list', [verifyToken, verifyRole('view_class_tab')], async (req, res) => {
     try {
         const userId = req.query.userId
         const result = await classService.getPublishedClassList(false, userId, req.roleId)
@@ -24,7 +24,7 @@ router.get('/not-join-list', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/joined-list', [verifyToken], async (req, res) => {
+router.get('/joined-list', [verifyToken, verifyRole('view_class_tab')], async (req, res) => {
     try {
         const userId = req.query.userId
         const result = await classService.getPublishedClassList(true, userId, req.roleId)
@@ -42,7 +42,7 @@ router.get('/joined-list', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/create', [verifyToken], async (req, res) => {
+router.post('/create', [verifyToken, verifyRole('create_class')], async (req, res) => {
     try {
         const payload = req.body
         const validatiton = classValidator.createClassValidator(payload)
@@ -74,7 +74,7 @@ router.post('/create', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/join', [verifyToken], async (req, res) => {
+router.post('/join', [verifyToken, verifyRole('join_class')], async (req, res) => {
     try {
         const result = await classService.joinPublishedClass(req.body)
         if (result.resultCode == 0) {
@@ -97,7 +97,7 @@ router.post('/join', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/detail', [verifyToken], async (req, res) => {
+router.get('/detail', [verifyToken, verifyRole('view_class_detail')], async (req, res) => {
     try {
         const result = await classService.getClassDetail(req.query, req.roleId)
         if (result.resultCode === 0) {
@@ -121,7 +121,7 @@ router.get('/detail', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/document-list', [verifyToken], async (req, res) => {
+router.get('/document-list', [verifyToken, verifyRole('view_class_detail')], async (req, res) => {
     try {
         const result = await classService.getDocumentList(req.query, req.roleId)
         if (result.resultCode === 0) {
@@ -145,7 +145,7 @@ router.get('/document-list', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/add-document', [verifyToken], async (req, res) => {
+router.post('/add-document', [verifyToken, verifyRole('add_document')], async (req, res) => {
     try {
         const result = await classService.addDocument(req.body, req.roleId)
         if (result.resultCode === 0) {
@@ -168,7 +168,7 @@ router.post('/add-document', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/exam/need-done', [verifyToken], async (req, res) => {
+router.get('/exam/need-done', [verifyToken, verifyRole('view_list_exam_need_done')], async (req, res) => {
     try {
         const result = await classService.getListExamNeedDone(req.query, req.roleId)
         if (result.resultCode === 0) {
@@ -192,7 +192,7 @@ router.get('/exam/need-done', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/exam/created-list', [verifyToken], async (req, res) => {
+router.get('/exam/created-list', [verifyToken, verifyRole('view_list_exam_created')], async (req, res) => {
     try {
         const result = await classService.getListExamCreated(req.query, req.roleId)
         if (result.resultCode === 0) {
@@ -216,7 +216,7 @@ router.get('/exam/created-list', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/exam/infor', [verifyToken], async (req, res) => {
+router.get('/exam/infor', [verifyToken, verifyRole('view_list_exam_created')], async (req, res) => {
     try {
         const result = await classService.viewExam(req.query)
         if (result.resultCode === 0) {
@@ -240,7 +240,7 @@ router.get('/exam/infor', [verifyToken], async (req, res) => {
     }
 })
 
-router.get('/exam/infor-for-student', [verifyToken], async (req, res) => {
+router.get('/exam/infor-for-student', [verifyToken, verifyRole('view_list_exam_need_done')], async (req, res) => {
     try {
         const result = await classService.viewExamByStudent(req.query, req.userId)
         if (result.resultCode === 0) {
@@ -264,7 +264,7 @@ router.get('/exam/infor-for-student', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/exam/create', [verifyToken], async (req, res) => {
+router.post('/exam/create', [verifyToken, verifyRole('view_list_exam_created')], async (req, res) => {
     try {
         const payload = req.body
 
@@ -298,7 +298,7 @@ router.post('/exam/create', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/exam/update', [verifyToken], async (req, res) => {
+router.post('/exam/update', [verifyToken, verifyRole('view_list_exam_created')], async (req, res) => {
     try {
         const payload = req.body
 
@@ -332,7 +332,7 @@ router.post('/exam/update', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/exam/delete', [verifyToken], async (req, res) => {
+router.post('/exam/delete', [verifyToken, verifyRole('view_list_exam_created')], async (req, res) => {
     try {
         const payload = req.body
         const result = await classService.deleteExam(payload, req.roleId)
@@ -356,7 +356,7 @@ router.post('/exam/delete', [verifyToken], async (req, res) => {
     }
 })
 
-router.post('/exam/submit-result', [verifyToken], async (req, res) => {
+router.post('/exam/submit-result', [verifyToken, verifyRole('view_list_exam_need_done')], async (req, res) => {
     try {
         const payload = req.body
         const result = await classService.submitExamResult(payload, req.userId)
