@@ -104,7 +104,7 @@ const getListExamNeedDone = async (data, roleId) => {
     const limit = size
     const offset = page * size
 
-    const exams = await classRepo.getListExamNeedDonePaging(classId, offset, limit)
+    const exams = await classRepo.getListExamNeedDonePaging(classId, userId, offset, limit)
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', exams)
 }
 

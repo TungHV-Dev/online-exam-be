@@ -96,27 +96,31 @@ const getClassListUserJoined = async (userId) => {
     return response.rows
 }
 
-const getListExamNeedDonePaging = async (classId, offset = 0, limit = 10) => {
+const getListExamNeedDonePaging = async (classId, userId, offset = 0, limit = 10) => {
     const querySql = 
         `select 
             e.exam_id, e.exam_name, e.total_question, e.total_minutes,
             case when ue.id is null then 0 else 1 end as status
         from exam e 
-        left join user_exam ue on ue.exam_id = e.exam_id and ue.class_id = e.class_id and ue.is_deleted = 0
-        where e.class_id = $1::integer and e.is_published = 1 and e.is_deleted = 0
+        left join user_exam ue 
+            on ue.exam_id = e.exam_id and ue.class_id = e.class_id 
+            and ue.user_id = $1::integer and ue.is_deleted = 0
+        where e.class_id = $2::integer and e.is_published = 1 and e.is_deleted = 0
         order by e.exam_name 
-        offset $2::integer
-        limit $3::integer;`
+        offset $3::integer
+        limit $4::integer;`
 
     const totalSql = 
         `select count(e.exam_id) as total
         from exam e 
-        left join user_exam ue on ue.exam_id = e.exam_id and ue.class_id = e.class_id and ue.is_deleted = 0
-        where e.class_id = $1::integer and e.is_published = 1 and e.is_deleted = 0;`
+        left join user_exam ue 
+            on ue.exam_id = e.exam_id and ue.class_id = e.class_id 
+            and ue.user_id = $1::integer and ue.is_deleted = 0
+        where e.class_id = $2::integer and e.is_published = 1 and e.is_deleted = 0;`
 
     const resultPaging = await Promise.all([
-        _postgresDB.query(querySql, [classId, offset, limit]),
-        _postgresDB.query(totalSql, [classId]),
+        _postgresDB.query(querySql, [userId, classId, offset, limit]),
+        _postgresDB.query(totalSql, [userId, classId]),
     ])
     
     return {
