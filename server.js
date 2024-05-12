@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
-
+const logger = require('./logger/logger')
 global.XMLHttpRequest = require('xhr2')
 
 const postgresConnection = require('./connections/postgres')
@@ -16,8 +16,8 @@ const app = express()
 // Cấu hình server
 app.use(express.json())
 app.use(bodyParser.json())
-app.use(bodyParser.json({ limit: process.env.SIZE_FILE_LIMIT }))
-app.use(bodyParser.urlencoded({ extended: true, limit: process.env.SIZE_FILE_LIMIT }));
+app.use(bodyParser.json({ limit: process.env.REQUEST_BODY_SIZE_LIMIT }))
+app.use(bodyParser.urlencoded({ extended: true, limit: process.env.REQUEST_BODY_SIZE_LIMIT }));
 
 app.use(session({
     saveUninitialized: false,
@@ -28,7 +28,7 @@ app.use(session({
 
 app.use(cors({
     origin: '*',
-    methods: 'GET,POST,OPTIONS,PUT,PATCH,DELETE',
+    methods: 'GET,POST,PUT,DELETE',
     optionsSuccessStatus: 200
 }))
 
@@ -39,7 +39,10 @@ const userApi = require('./routers/user.router')
 const authApi = require('./routers/authentication.router')
 
 app.get('/health-check', (req, res) => {
-    res.status(200).json({ code: 200, message: `Service is running on port ${port}` })
+    res.status(200).json({ 
+        code: 200, 
+        message: `Server is running on port ${port}` 
+    })
 })
 
 app.use('/online-exam-api/dashboard', dashboardApi)
@@ -48,5 +51,5 @@ app.use('/online-exam-api/user', userApi)
 app.use('/online-exam-api/auth', authApi)
 
 app.listen(port, () => {
-    console.log(`Server is running at port: ${port}`)
+    logger.info(`Server is running on port: ${port}`)
 })

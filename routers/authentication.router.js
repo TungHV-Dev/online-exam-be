@@ -5,6 +5,7 @@ const { verifyToken } = require('../middleware/jwt.middleware')
 const { verifyRole } = require('../middleware/role.middleware')
 const authenValidator = require('../validation/authentication.validator')
 const authenService = require('../services/authentication.service')
+const logger = require('../logger/logger')
 
 
 router.post('/register', [verifyToken, verifyRole('view_admin_tab')], async (req, res) => {
@@ -31,7 +32,7 @@ router.post('/register', [verifyToken, verifyRole('view_admin_tab')], async (req
             message: constant.RESPONSE_MESSAGE.SUCCESS,
         })
     } catch (e) {
-        console.log('Exception at router /auth/register: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -64,7 +65,7 @@ router.post('/login', async (req, res) => {
             data: response.data
         })
     } catch (e) {
-        console.log('Exception at router /auth/login: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -96,7 +97,7 @@ router.post('/reset-password', [verifyToken, verifyRole('view_admin_tab')], asyn
             message: constant.RESPONSE_MESSAGE.SUCCESS,
         })
     } catch (e) {
-        console.log('Exception at router /auth/reset-password: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR

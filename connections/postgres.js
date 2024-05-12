@@ -1,4 +1,5 @@
 const { Pool } = require('pg')
+const logger = require('../logger/logger')
 
 function createConnectionPool() {
     const credentials = {
@@ -13,10 +14,10 @@ function createConnectionPool() {
     const pool = new Pool(credentials)
     pool.connect((err, client, done) => {
         if (err) {
-            console.log(`Error connect to postgres DB: ${credentials.host}:${credentials.port}`)
+            logger.error(`Error connect to postgres DB: ${err.message}`)
             throw err
         } else {
-            console.log(`Postgres DB connected at port: ${credentials.port}`)
+            logger.info(`Postgres DB connected on port: ${credentials.port}`)
             global._postgresDB = client
         }
     })

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const userRepo = require('../repositories/user.repo')
 const constant = require('../utils/constant')
+const logger = require('../logger/logger')
 
 const verifyToken = async (req, res, next) => {
     try {
@@ -41,7 +42,7 @@ const verifyToken = async (req, res, next) => {
         req.roleId = user.role_id
         req.userId = user.user_id
     } catch (err) {
-        console.log('Exception while verify jwt token: ', err?.message)
+        logger.error(`Exception while verify jwt token: ${err?.message}`)
 
         let message = ''
         if (err instanceof jwt.TokenExpiredError) {

@@ -4,6 +4,7 @@ const constant = require('../utils/constant')
 const { verifyToken } = require('../middleware/jwt.middleware')
 const { verifyRole } = require('../middleware/role.middleware')
 const userService = require('../services/user.service')
+const logger = require('../logger/logger')
 
 router.get('/all-teachers', [verifyToken], async (req, res) => {
     try {
@@ -21,7 +22,7 @@ router.get('/all-teachers', [verifyToken], async (req, res) => {
             message: constant.RESPONSE_MESSAGE.NOT_FOUND,
         })
     } catch (e) {
-        console.log('Exception at router /user/all-teachers: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -45,7 +46,7 @@ router.get('/all-roles', [verifyToken], async (req, res) => {
             message: constant.RESPONSE_MESSAGE.NOT_FOUND,
         })
     } catch (e) {
-        console.log('Exception at router /user/all-roles: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -72,7 +73,7 @@ router.get('/search', [verifyToken, verifyRole('view_admin_tab')], async (req, r
             message: constant.RESPONSE_MESSAGE.NOT_FOUND,
         })
     } catch (e) {
-        console.log('Exception at router /user/search: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -95,7 +96,7 @@ router.post('/lock', [verifyToken, verifyRole('view_admin_tab')], async (req, re
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /user/lock: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -118,7 +119,7 @@ router.post('/update-infor', [verifyToken, verifyRole('view_admin_tab')], async 
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /user/update-infor: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR

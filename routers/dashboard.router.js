@@ -4,6 +4,7 @@ const constant = require('../utils/constant')
 const dashboardService = require('../services/dashboard.service')
 const { verifyToken } = require('../middleware/jwt.middleware')
 const { verifyRole } = require('../middleware/role.middleware')
+const logger = require('../logger/logger')
 
 router.get('/summary-data', [verifyToken, verifyRole('view_dashboard_tab')], async (req, res) => {
     try {
@@ -21,7 +22,7 @@ router.get('/summary-data', [verifyToken, verifyRole('view_dashboard_tab')], asy
             message: constant.RESPONSE_MESSAGE.NOT_FOUND,
         })
     } catch (e) {
-        console.log('Exception at router /dashboard/summary-data: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR

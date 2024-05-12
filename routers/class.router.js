@@ -5,6 +5,7 @@ const classService = require('../services/class.service')
 const classValidator = require('../validation/class.validator')
 const { verifyToken } = require('../middleware/jwt.middleware')
 const { verifyRole } = require('../middleware/role.middleware')
+const logger = require('../logger/logger')
 
 router.get('/not-join-list', [verifyToken, verifyRole('view_class_tab')], async (req, res) => {
     try {
@@ -16,7 +17,7 @@ router.get('/not-join-list', [verifyToken, verifyRole('view_class_tab')], async 
             data: result.data
         })
     } catch (e) {
-        console.log('Exception at router /class/not-join-list: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -34,7 +35,7 @@ router.get('/joined-list', [verifyToken, verifyRole('view_class_tab')], async (r
             data: result.data
         })
     } catch (e) {
-        console.log('Exception at router /class/joined-list: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -66,7 +67,7 @@ router.post('/create', [verifyToken, verifyRole('create_class')], async (req, re
             message: response.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/create: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -89,7 +90,7 @@ router.post('/join', [verifyToken, verifyRole('join_class')], async (req, res) =
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/join: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -113,7 +114,7 @@ router.get('/detail', [verifyToken, verifyRole('view_class_detail')], async (req
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/detail: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -137,7 +138,7 @@ router.get('/document-list', [verifyToken, verifyRole('view_class_detail')], asy
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/document-list: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -160,7 +161,7 @@ router.post('/add-document', [verifyToken, verifyRole('add_document')], async (r
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/document-list: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -184,7 +185,7 @@ router.get('/exam/need-done', [verifyToken, verifyRole('view_list_exam_need_done
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/need-done: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -208,7 +209,7 @@ router.get('/exam/created-list', [verifyToken, verifyRole('view_list_exam_create
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/created-list: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -232,7 +233,7 @@ router.get('/exam/infor', [verifyToken, verifyRole('view_list_exam_created')], a
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/infor: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -256,7 +257,7 @@ router.get('/exam/infor-for-student', [verifyToken, verifyRole('view_list_exam_n
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/infor-for-student: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -290,7 +291,7 @@ router.post('/exam/create', [verifyToken, verifyRole('view_list_exam_created')],
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/create-exam: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -324,7 +325,7 @@ router.post('/exam/update', [verifyToken, verifyRole('view_list_exam_created')],
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/create-exam: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -348,7 +349,7 @@ router.post('/exam/delete', [verifyToken, verifyRole('view_list_exam_created')],
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/delete: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
@@ -373,7 +374,7 @@ router.post('/exam/submit-result', [verifyToken, verifyRole('view_list_exam_need
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
-        console.log('Exception at router /class/exam/submit-result: ', e?.message)
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,
             message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
