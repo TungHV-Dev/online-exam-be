@@ -79,6 +79,7 @@ const login = async (data) => {
             userId: user.user_id,
             userName: user.user_name,
             fullName: user.full_name,
+            email: user.email,
             functionCodes: functionCodes
         }
         const privateKey = fs.readFileSync('./online_exam_private_key.pem', 'utf8')
