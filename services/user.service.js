@@ -25,6 +25,11 @@ const searchUsers = async (page, size, searchValue) => {
     return result
 }
 
+const getUserInfor = async (profileId) => {
+    const user = await userRepo.getUserById(profileId)
+    return user
+}
+
 const lockUser = async (data) => {
     const { userId, lock } = data
     const _lock = lock ? 1 : 0
@@ -66,5 +71,6 @@ module.exports = {
     getAllRoles,
     searchUsers,
     lockUser,
-    updateUserInfor
+    updateUserInfor,
+    getUserInfor
 }

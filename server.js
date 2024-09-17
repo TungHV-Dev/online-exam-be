@@ -32,11 +32,23 @@ app.use(cors({
     optionsSuccessStatus: 200
 }))
 
+// Cấu hình ghi log request lên server
+app.use((req, res, next) => {
+    let log = `[${req.method}] ${req.originalUrl}`
+    if (req.body) {
+        log = log.concat(` ${JSON.stringify(req.body)}`)
+    }
+
+    logger.info(log)
+    next();
+  });
+
 // Cấu hình router API
+const authApi = require('./routers/authentication.router')
 const dashboardApi = require('./routers/dashboard.router')
 const classApi = require('./routers/class.router')
+const examApi = require('./routers/exam.router')
 const userApi = require('./routers/user.router')
-const authApi = require('./routers/authentication.router')
 
 app.get('/health-check', (req, res) => {
     res.status(200).json({ 
@@ -45,10 +57,11 @@ app.get('/health-check', (req, res) => {
     })
 })
 
+app.use('/online-exam-api/auth', authApi)
 app.use('/online-exam-api/dashboard', dashboardApi)
 app.use('/online-exam-api/class', classApi)
+app.use('/online-exam-api/exam', examApi)
 app.use('/online-exam-api/user', userApi)
-app.use('/online-exam-api/auth', authApi)
 
 app.listen(port, () => {
     logger.info(`Server is running on port: ${port}`)

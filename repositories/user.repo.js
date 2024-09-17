@@ -40,6 +40,14 @@ const insertUser = async (userInfor) => {
     return response
 }
 
+const getUserById = async (profileId) => {
+    const querySql = 
+        `select user_id, user_name, full_name, role_id, email, gender, address, phone_number, date_of_birth, is_locked
+        from users where user_id = $1::integer and is_deleted = 0;`
+    const response = await _postgresDB.query(querySql, [profileId])
+    return response.rows[0]
+}
+
 const getUserByUsername = async (username) => {
     const querySql = `select * from users where user_name = $1::text and is_deleted = 0;`
     const response = await _postgresDB.query(querySql, [username])
@@ -139,6 +147,7 @@ module.exports = {
     getUsers,
     insertUser,
     getUserByUsername,
+    getUserById,
     getUserByEmail,
     getUserByIdAndName,
     getUsersPaging,

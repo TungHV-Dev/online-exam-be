@@ -81,6 +81,32 @@ router.get('/search', [verifyToken, verifyRole('view_admin_tab')], async (req, r
     }
 })
 
+router.get('/', async (req, res) => {
+    try {
+        const profileId = Number(req.query.profileId || 0)
+        const result = await userService.getUserInfor(profileId)
+
+        if (result) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.NOT_FOUND,
+            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+        })
+    } catch (e) {
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
 router.post('/lock', [verifyToken, verifyRole('view_admin_tab')], async (req, res) => {
     try {
         const result = await userService.lockUser(req.body)
