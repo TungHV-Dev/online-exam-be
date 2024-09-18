@@ -42,8 +42,12 @@ const insertUser = async (userInfor) => {
 
 const getUserById = async (profileId) => {
     const querySql = 
-        `select user_id, user_name, full_name, role_id, email, gender, address, phone_number, date_of_birth, is_locked
-        from users where user_id = $1::integer and is_deleted = 0;`
+        `select 
+            u.user_id, u.user_name, u.full_name, r.role_id, r.role_name, 
+            u.email, u.gender, u.address, u.phone_number, u.date_of_birth, u.is_locked
+        from users u
+        inner join roles r on r.role_id = u.role_id 
+        where u.user_id = $1::integer and u.is_deleted = 0;`
     const response = await _postgresDB.query(querySql, [profileId])
     return response.rows[0]
 }

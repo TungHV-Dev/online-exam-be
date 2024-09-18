@@ -70,7 +70,7 @@ module.exports = {
     getAllTeacher,
     getAllRoles,
     searchUsers,
+    getUserInfor,
     lockUser,
-    updateUserInfor,
-    getUserInfor
+    updateUserInfor
 }
