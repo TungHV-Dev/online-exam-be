@@ -105,11 +105,42 @@ const resetPassword = async (data) => {
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không tồn tại trong hệ thống!')
         }
 
-        // Tạo mật khẩu mã hóa và lưu thông tin user
+        // Tạo mật khẩu mã hóa mới và lưu thông tin user
         const saltRounds = 10
-        const passwordHash = bcrypt.hashSync(newPassword, saltRounds)
+        const newPasswordHash = bcrypt.hashSync(newPassword, saltRounds)
 
-        const resultUpdate = await userRepo.updatePasswordUser(user.user_id, passwordHash)
+        const resultUpdate = await userRepo.updatePasswordUser(user.user_id, newPasswordHash)
+        if (resultUpdate.rowCount === 0) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Cập nhật mật khẩu thất bại')
+        }
+
+        return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
+    } catch (err) {
+        throw err
+    }
+}
+
+const changePassword = async (data) => {
+    try {
+        const { username, password, newPassword } = data
+        // Kiểm tra xem user có tồn tại hay không
+        const user = await userRepo.getUserByUsername(username)
+        if (!user) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không tồn tại trong hệ thống!')
+        }
+
+        // Kiểm tra mật khẩu hiện tại có chính xác không
+        const passwordHashInDb = user.password_hash || ''
+        const checkPassword = bcrypt.compareSync(password, passwordHashInDb)
+        if (!checkPassword) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Mật khẩu hiện tại không chính xác. Vui lòng kiểm tra lại!')
+        }
+
+        // Tạo mật khẩu mã hóa mới và lưu thông tin user
+        const saltRounds = 10
+        const newPasswordHash = bcrypt.hashSync(newPassword, saltRounds)
+
+        const resultUpdate = await userRepo.updatePasswordUser(user.user_id, newPasswordHash)
         if (resultUpdate.rowCount === 0) {
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Cập nhật mật khẩu thất bại')
         }
@@ -123,5 +154,6 @@ const resetPassword = async (data) => {
 module.exports = {
     registerUser,
     login,
-    resetPassword
+    resetPassword,
+    changePassword
 }

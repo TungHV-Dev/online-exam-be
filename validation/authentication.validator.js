@@ -47,6 +47,25 @@ const resetPasswordValidator = function (data) {
     return new ResponseValidator(true)
 }
 
+const changePasswordValidator = function (data) {
+    // check username
+    if (!data.username || !checkUserNameValid(data.username)) {
+        return new ResponseValidator(false, 'Tên đăng nhập không hợp lệ!')
+    }
+
+    // check new password
+    if (!data.password || !checkPasswordValid(data.password)) {
+        return new ResponseValidator(false, 'Mật khẩu không hợp lệ!')
+    }
+
+    // check new password
+    if (!data.newPassword || !checkPasswordValid(data.newPassword)) {
+        return new ResponseValidator(false, 'Mật khẩu mới không hợp lệ!')
+    }
+
+    return new ResponseValidator(true)
+}
+
 const checkUserNameValid = function (username) {
     // kiem tra trong chuoi co khoang trang khong
     let regex = /\s/
@@ -104,5 +123,6 @@ const checkEmailValid = function (email) {
 module.exports = {
     registerValidator,
     loginValidator,
-    resetPasswordValidator
+    resetPasswordValidator,
+    changePasswordValidator
 }

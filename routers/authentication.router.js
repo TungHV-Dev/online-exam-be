@@ -105,5 +105,37 @@ router.post('/reset-password', [verifyToken, verifyRole('view_admin_tab')], asyn
     }
 })
 
+router.post('/change-password', async (req, res) => {
+    try {
+        const data = req.body
+        const validatiton = authenValidator.changePasswordValidator(data)
+        if (!validatiton.valid) {
+            return res.status(constant.HTTP_STATUS_CODE.BAD_REQUEST).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: validatiton.message || constant.RESPONSE_MESSAGE.INPUT_INVALID
+            })
+        }
+
+        const response = await authenService.changePassword(data)
+        if (response.resultCode === constant.RESPONSE_CODE.FAIL) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.FAIL,
+                message: response.message || constant.RESPONSE_MESSAGE.FAIL,
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.SUCCESS,
+            message: constant.RESPONSE_MESSAGE.SUCCESS,
+        })
+    } catch (e) {
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
 
 module.exports = router
