@@ -100,9 +100,9 @@ const getListExamNeedDonePaging = async (classId, userId, offset = 0, limit = 10
     const querySql = 
         `select 
             e.exam_id, e.exam_name, e.total_question, e.total_minutes,
-            case when ue.id is null then 0 else 1 end as status
+            case when ue.attempt_id is null then 0 else 1 end as status
         from exam e 
-        left join user_exam ue 
+        left join attempts ue 
             on ue.exam_id = e.exam_id and ue.class_id = e.class_id 
             and ue.user_id = $1::integer and ue.is_deleted = 0
         where e.class_id = $2::integer and e.is_published = 1 and e.is_deleted = 0
@@ -113,7 +113,7 @@ const getListExamNeedDonePaging = async (classId, userId, offset = 0, limit = 10
     const totalSql = 
         `select count(e.exam_id) as total
         from exam e 
-        left join user_exam ue 
+        left join attempts ue 
             on ue.exam_id = e.exam_id and ue.class_id = e.class_id 
             and ue.user_id = $1::integer and ue.is_deleted = 0
         where e.class_id = $2::integer and e.is_published = 1 and e.is_deleted = 0;`

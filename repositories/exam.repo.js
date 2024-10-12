@@ -110,18 +110,18 @@ const getResultsByExamId = async (examId) => {
     return response.rows
 }
 
-const insertUserExam = async (userId, classId, examId, startTime, endTime, score) => {
+const insertAttempt = async (userId, classId, examId, startTime, endTime, score) => {
     const commandSql = 
-        `insert into user_exam (user_id, class_id, exam_id, start_time, end_time, score, created_time, updated_time, is_deleted)
+        `insert into attempts (user_id, class_id, exam_id, start_time, end_time, score, created_time, updated_time, is_deleted)
         values ($1::integer, $2::integer, $3::integer, $4, $5, $6::numeric, now(), now(), 0)
-        returning id;`
+        returning attempt_id;`
     const response = await _postgresDB.query(commandSql, [userId, classId, examId, startTime, endTime, score])
     return response
 }
 
-const insertUserExamQuestion = async (userExamId, userResults) => {
+const insertAttemptAnswer = async (attemptId, userResults) => {
     let commandSql = 
-        `insert into user_exam_question (user_exam_id, question_id, choosed_result_key, choosed_result_value)
+        `insert into attempt_answer (attempt_id, question_id, choosed_result_key, choosed_result_value)
         values `
 
     let index = 0
@@ -132,26 +132,26 @@ const insertUserExamQuestion = async (userExamId, userResults) => {
             commandSql += ','
         }
 
-        params.push(userExamId, userResults[i].questionId, userResults[i].choosedResultKey, userResults[i].choosedResultValue)
+        params.push(attemptId, userResults[i].questionId, userResults[i].choosedResultKey, userResults[i].choosedResultValue)
     }
 
     const response = await _postgresDB.query(commandSql, params)
     return response
 }
 
-const getUserExam = async (userId, classId, examId) => {
+const getAttempt = async (userId, classId, examId) => {
     const querySql = 
-        `select * from user_exam ue
+        `select * from attempts ue
         where ue.user_id = $1::integer and ue.class_id = $2::integer and ue.exam_id = $3::integer and ue.is_deleted = 0;`
     const response = await _postgresDB.query(querySql, [userId, classId, examId])
     return response.rows[0]
 }
 
-const getUserExamQuestion = async (userExamId) => {
+const getAttemptAnswer = async (attempt_id) => {
     const querySql = 
-        `select * from user_exam_question ueq 
-        where ueq.user_exam_id = $1::integer;`
-    const response = await _postgresDB.query(querySql, [userExamId])
+        `select * from attempt_answer aa 
+        where aa.attempt_id = $1::integer;`
+    const response = await _postgresDB.query(querySql, [attempt_id])
     return response.rows
 }
 
@@ -166,8 +166,8 @@ module.exports = {
     getExamById,
     getQuestionsByExamId,
     getResultsByExamId,
-    insertUserExam,
-    insertUserExamQuestion,
-    getUserExam,
-    getUserExamQuestion
+    insertAttempt,
+    insertAttemptAnswer,
+    getAttempt,
+    getAttemptAnswer
 }

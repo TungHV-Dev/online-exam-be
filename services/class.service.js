@@ -359,15 +359,15 @@ const viewExamByStudent = async (data, userId) => {
 
     const questions = await examRepo.getQuestionsByExamId(examId)
     const results = await examRepo.getResultsByExamId(examId)
-    const userExam = await examRepo.getUserExam(userId, classId, examId)
-    const userResults = await examRepo.getUserExamQuestion(userExam?.id || 0)
+    const attempt = await examRepo.getAttempt(userId, classId, examId)
+    const userResults = await examRepo.getAttemptAnswer(attempt?.attempt_id || 0)
 
     let result = {
         examId,
         examName: exam.exam_name,
         description: exam.description,
         totalMinutes: exam.total_minutes,
-        score: Number(userExam?.score || 0).toFixed(2)
+        score: Number(attempt?.score || 0).toFixed(2)
     }
 
     let questionList = []
@@ -479,14 +479,14 @@ const submitExamResult = async (data, userId) => {
     }
 
     // Lưu kết quả làm bài
-    const insertResult1 = await examRepo.insertUserExam(userId, exam?.class_id || 0, examId, startTime, endTime, Number(totalScore.toFixed(2)))
-    if (insertResult1.rowCount === 0 || !insertResult1.rows[0].id) {
+    const insertResult1 = await examRepo.insertAttempt(userId, exam?.class_id || 0, examId, startTime, endTime, Number(totalScore.toFixed(2)))
+    if (insertResult1.rowCount === 0 || !insertResult1.rows[0].attempt_id) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
 
-    const userExamId = insertResult1.rows[0].id
+    const attemptId = insertResult1.rows[0].attempt_id
     if (userResultInsert.length > 0) {
-        const insertResult2 = await examRepo.insertUserExamQuestion(userExamId, userResultInsert)
+        const insertResult2 = await examRepo.insertAttemptAnswer(attemptId, userResultInsert)
         if (insertResult2.rowCount !== userResultInsert.length) {
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
         }

@@ -6,8 +6,8 @@ const getOverviewData = async () => {
             (select count(class_id) from "class" where is_deleted = 0) as total_class,
             (select count(user_id) from users where role_id = $1 and is_deleted = 0) as total_student,
             (select count(exam_id) from exam where is_published = 1 and is_deleted = 0) as total_exam,
-            (select count(id) from user_exam where is_deleted = 0) as total_joined_exam,
-            (select coalesce(avg(coalesce(score, 0)), 0) from user_exam where is_deleted = 0) as avg_score;`
+            (select count(attempt_id) from attempts where is_deleted = 0) as total_joined_exam,
+            (select coalesce(avg(coalesce(score, 0)), 0) from attempts where is_deleted = 0) as avg_score;`
 
     const response = await _postgresDB.query(sqlQuery, [masterData.ROLE.ROLE_ID.TEACHER])
     return response.rows[0]
@@ -16,8 +16,8 @@ const getOverviewData = async () => {
 const getNearestJoinedExamNumber = async () => {
     const sqlQuery = 
         `select 
-            to_char(created_time::date, 'DD-MM-YYYY') as exam_date, count(id) as joined_exam_number
-        from user_exam
+            to_char(created_time::date, 'DD-MM-YYYY') as exam_date, count(attempt_id) as joined_exam_number
+        from attempts
         where created_time::date >= (current_date - interval '6 days')::date and is_deleted = 0
         group by created_time::date
         order by created_time::date desc;`
@@ -39,8 +39,8 @@ const getTopClassHasMaxAvgScore = async (topNumber) => {
                 where e.class_id = c.class_id and e.is_published = 1 and e.is_deleted = 0 
             ) as total_exam
         from (
-            select class_id, avg(score) as avg_score, count(id) as total_joined_exam
-            from user_exam
+            select class_id, avg(score) as avg_score, count(attempt_id) as total_joined_exam
+            from attempts
             where is_deleted  = 0
             group by class_id
             order by avg_score
