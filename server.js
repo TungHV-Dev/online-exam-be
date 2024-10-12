@@ -36,7 +36,11 @@ app.use(cors({
 app.use((req, res, next) => {
     let log = `[${req.method}] ${req.originalUrl}`
     if (req.body) {
-        log = log.concat(` ${JSON.stringify(req.body)}`)
+        if (req.originalUrl.includes('/login')) {
+            log = log.concat(` { "username": "${req.body.username || ''}" }`)
+        } else {
+            log = log.concat(` ${JSON.stringify(req.body)}`)
+        }
     }
 
     logger.info(log)

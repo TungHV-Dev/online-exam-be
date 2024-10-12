@@ -8,7 +8,9 @@ function createConnectionPool() {
         database: process.env.DB_NAME,
         user: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
-        ssl: true,
+        ssl: {
+            rejectUnauthorized: false // Nếu bạn không sử dụng chứng chỉ SSL hợp lệ
+        }
     }
 
     const pool = new Pool(credentials)
