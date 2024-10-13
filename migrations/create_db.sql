@@ -70,6 +70,8 @@ create table attempts (
 create table exam (
 	Exam_Id				serial			not null primary key,
 	Class_Id			int				null,
+	subject_id 			int 			null,
+	exam_code 			uuid 			null,
 	Exam_Name			varchar(1000)	null,
 	Description			text			null,
 	Total_Question		int				null,
@@ -143,5 +145,6 @@ create table test_cases (
 create table subject (
 	subject_id			serial			not null primary key,
 	subject_name		varchar(2000)	null,
+	subject_code 		varchar(100) 	null,
 	is_deleted			int				null
 );

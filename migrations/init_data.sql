@@ -29,20 +29,20 @@ values
 	(3, 1), (3, 2), (3, 5), (3, 6), (3, 8);
 
 -- Khởi tạo data cho bảng subject
-insert into subject (subject_name, is_deleted)
+insert into subject (subject_name, is_deleted, subject_code)
 values 
-	('Nhập môn CNTT', 0),
-	('Tin học đại cương', 0),
-	('Lập trình C', 0),
-	('Lập trình web cơ bản', 0),
-	('Lập trình web nâng cao', 0),
-	('Nhập môn an toàn thông tin', 0),
-	('Kỹ thuật lập trình', 0),
-	('Cấu trúc dữ liệu và giải thuật', 0),
-	('Phân tích thiết kế phần mềm', 0),
-	('Kiểm thử hệ thống CNTT', 0),
-	('Quản trị dự án CNTT', 0),
-	('Toán cao cấp 1', 0),
-	('Toán cao cấp 2', 0),
-	('Triết học 1', 0),
-	('Triết học 2', 0);
+	('Nhập môn CNTT', 0, 'IT_0001'),
+	('Tin học đại cương', 0, 'IT_0002'),
+	('Lập trình C', 0, 'IT_0003'),
+	('Lập trình web cơ bản', 0, 'IT_0004'),
+	('Lập trình web nâng cao', 0, 'IT_0005'),
+	('Nhập môn an toàn thông tin', 0, 'IT_0006'),
+	('Kỹ thuật lập trình', 0, 'IT_0007'),
+	('Cấu trúc dữ liệu và giải thuật', 0, 'IT_0008'),
+	('Phân tích thiết kế phần mềm', 0, 'IT_0009'),
+	('Kiểm thử hệ thống CNTT', 0, 'IT_0010'),
+	('Quản trị dự án CNTT', 0, 'IT_0011'),
+	('Toán cao cấp 1', 0, 'MA_0001'),
+	('Toán cao cấp 2', 0, 'MA_0002'),
+	('Triết học 1', 0, 'PH_0001'),
+	('Triết học 2', 0, 'PH_0002');

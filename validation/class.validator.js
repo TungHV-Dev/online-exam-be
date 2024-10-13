@@ -1,7 +1,7 @@
 const { ResponseValidator } = require('../model/response')
 
 const createClassValidator = function (data) {
-    if (data.teacherId && data.classCode && data.className) {
+    if (data.teacherId && data.classCode && data.className && data.subjectId) {
         return new ResponseValidator(true)
     }
 

@@ -25,6 +25,7 @@ const createNewClass = async (payload) => {
     const teacherId = payload.teacherId || 0
     const classCode = payload.classCode || ''
     const className = payload.className || ''
+    const subjectId = payload.subjectId || 0
     const description = payload.description || ''
 
     const classExist = await classRepo.getClassByClassCode(classCode)
@@ -32,7 +33,7 @@ const createNewClass = async (payload) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Mã lớp học đã tồn tại. Vui lòng kiểm tra lại!')
     }
 
-    const result = await classRepo.insertClass(teacherId, classCode, className, description)
+    const result = await classRepo.insertClass(teacherId, classCode, className, subjectId, description)
     if (result.rowCount > 0 && result.rows[0].class_id) {
         return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
     }
@@ -79,6 +80,8 @@ const getClassDetail = async (data, roleId) => {
         className: classExist.class_name,
         teacherName: `${classExist.teacher_full_name} (${classExist.teacher_user_name})`,
         description: classExist.description,
+        subjectCode: classExist.subject_code,
+        subjectName: classExist.subject_name
     }
 
     const students = await userRepo.getStudentsByClassId(classId)
