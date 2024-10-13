@@ -189,6 +189,14 @@ const insertClassDocument = async (classId, fileName, filePath) => {
     return response
 }
 
+const getAllSubject = async () => {
+    const querySql = 
+        `select subject_id, subject_name from subject s where is_deleted = 0;`
+
+    const response = await _postgresDB.query(querySql)
+    return response.rows || []
+}
+
 module.exports = {
     insertClass,
     getClassById,
@@ -202,5 +210,6 @@ module.exports = {
     getListExamNeedDonePaging,
     getListExamCreatedPaging,
     getDocumentListPaging,
-    insertClassDocument
+    insertClassDocument,
+    getAllSubject
 }

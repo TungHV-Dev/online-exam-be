@@ -54,7 +54,7 @@ const classApi = require('./routers/class.router')
 const examApi = require('./routers/exam.router')
 const userApi = require('./routers/user.router')
 
-app.get('/health-check', (req, res) => {
+app.get('/online-exam-api/health-check', (req, res) => {
     res.status(200).json({ 
         code: 200, 
         message: `Server is running on port ${port}` 

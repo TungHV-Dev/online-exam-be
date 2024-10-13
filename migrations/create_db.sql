@@ -25,6 +25,7 @@ create table roles (
 create table public.class (
 	Class_Id			serial			not null primary key,
 	Teacher_Id			int 			null,
+	Subject_Id			int				null,
 	Class_Code			varchar(50)		null,
 	Class_Name			varchar(2000)	null,
 	Description			text			null,
@@ -137,4 +138,10 @@ create table test_cases (
 	is_deleted				int 			null,
 	created_time 			timestamp 		null,
 	updated_time			timestamp		null
+);
+
+create table subject (
+	subject_id			serial			not null primary key,
+	subject_name		varchar(2000)	null,
+	is_deleted			int				null
 );

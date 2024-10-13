@@ -497,6 +497,17 @@ const submitExamResult = async (data, userId) => {
     })
 }
 
+const getMasterDataSubjects = async (params) => {
+    const subjects = await classRepo.getAllSubject()
+    const results = subjects.map(s => {
+        return {
+            subjectId: s.subject_id,
+            subjectName: s.subject_name
+        }
+    })
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', results)
+}
+
 module.exports = {
     getPublishedClassList,
     createNewClass,
@@ -511,5 +522,6 @@ module.exports = {
     deleteExam,
     viewExam,
     viewExamByStudent,
-    submitExamResult
+    submitExamResult,
+    getMasterDataSubjects
 }
