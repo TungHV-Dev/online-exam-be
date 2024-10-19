@@ -205,6 +205,7 @@ const createExam = async (data, roleId) => {
 
         const questionIds = insertQuestionResult.rows
         let resultList = []
+        let testcaseList = []
 
         for (let i = 0; i < questions.length; i++) {
             const questionId = questionIds[i].question_id
@@ -212,13 +213,29 @@ const createExam = async (data, roleId) => {
                 result.questionId = questionId
                 result.isCorrect = Number(result.isCorrect)
                 return result
-            })
+            }) || []
             resultList.push(...questionResults)
+
+            const testcases = questions[i]?.testcases?.map(testcase => {
+                testcase.questionId = questionId
+                testcase.isSampleCase = Number(testcase.isSampleCase)
+                return testcase
+            }) || []
+            testcaseList.push(...testcases)
         }
 
-        const insertResult = await examRepo.insertResults(resultList)
-        if (insertResult.rowCount !== resultList.length) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+        if (resultList.length > 0) {
+            const insertResult = await examRepo.insertResults(resultList)
+            if (insertResult.rowCount !== resultList.length) {
+                return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra khi lưu đáp án. Vui lòng kiểm tra lại!')
+            }
+        }
+        
+        if (testcaseList.length > 0) {
+            const insertTestCase = await examRepo.insertTestCases(testcaseList)
+            if (insertTestCase.rowCount !== testcaseList.length) {
+                return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra khi lưu test case. Vui lòng kiểm tra lại!')
+            }
         }
     }
 
@@ -244,8 +261,11 @@ const updateExam = async (data, roleId) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
 
-    // Xóa các câu hỏi và đáp án cũ đi để insert mới
-    await examRepo.deleteResults(examId)
+    // Xóa các câu hỏi, đáp án, test case cũ đi để insert mới (câu hỏi xóa sau cùng)
+    await Promise.all([
+        examRepo.deleteTestCases(examId),
+        examRepo.deleteResults(examId)
+    ])
     await examRepo.deleteQuestions(examId)
 
     if (questions.length > 0) {
@@ -256,6 +276,7 @@ const updateExam = async (data, roleId) => {
 
         const questionIds = insertQuestionResult.rows
         let resultList = []
+        let testcaseList = []
 
         for (let i = 0; i < questions.length; i++) {
             const questionId = questionIds[i].question_id
@@ -263,13 +284,29 @@ const updateExam = async (data, roleId) => {
                 result.questionId = questionId
                 result.isCorrect = Number(result.isCorrect)
                 return result
-            })
+            }) || []
             resultList.push(...questionResults)
+
+            const testcases = questions[i]?.testcases?.map(testcase => {
+                testcase.questionId = questionId
+                testcase.isSampleCase = Number(testcase.isSampleCase)
+                return testcase
+            }) || []
+            testcaseList.push(...testcases)
         }
 
-        const insertResult = await examRepo.insertResults(resultList)
-        if (insertResult.rowCount !== resultList.length) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+        if (resultList.length > 0) {
+            const insertResult = await examRepo.insertResults(resultList)
+            if (insertResult.rowCount !== resultList.length) {
+                return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra khi lưu đáp án. Vui lòng kiểm tra lại!')
+            }
+        }
+        
+        if (testcaseList.length > 0) {
+            const insertTestCase = await examRepo.insertTestCases(testcaseList)
+            if (insertTestCase.rowCount !== testcaseList.length) {
+                return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra khi lưu test case. Vui lòng kiểm tra lại!')
+            }
         }
     }
 
@@ -290,7 +327,10 @@ const deleteExam = async (data, roleId) => {
         }
     }
 
-    await examRepo.deleteResults(examId)
+    await Promise.all([
+        examRepo.deleteTestCases(examId),
+        examRepo.deleteResults(examId)
+    ])
     await examRepo.deleteQuestions(examId)
 
     const deletedExam = await examRepo.deleteExam(examId)
@@ -314,8 +354,15 @@ const viewExam = async (data) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Bài thi không tồn tại hoặc đã bị xóa khỏi hệ thống!')
     }
 
-    const questions = await examRepo.getQuestionsByExamId(examId)
-    const results = await examRepo.getResultsByExamId(examId)
+    const dataQueries = await Promise.all([
+        examRepo.getQuestionsByExamId(examId),
+        examRepo.getResultsByExamId(examId),
+        examRepo.getTestCasesByExamId(examId, false)
+    ])
+
+    const questions = dataQueries[0] || []
+    const results = dataQueries[1] || []
+    const testcases = dataQueries[2] || []
 
     let result = {
         examId,
@@ -341,6 +388,16 @@ const viewExam = async (data) => {
             }
         })
         questionItem.results = resultList
+
+        let testcaseList = testcases?.filter(x => x.question_id === question.question_id)?.map(x => {
+            return {
+                isSampleCase: Boolean(x.is_sample_case),
+                inputData: x.input_data,
+                expectedOutput: x.expected_output
+            }
+        })
+        questionItem.testcases = testcaseList
+
         questionList.push(questionItem)
     }
     result.questions = questionList

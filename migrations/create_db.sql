@@ -139,7 +139,8 @@ create table test_cases (
 	expected_output			text			null,
 	is_deleted				int 			null,
 	created_time 			timestamp 		null,
-	updated_time			timestamp		null
+	updated_time			timestamp		null,
+	is_sample_case 			int 			null
 );
 
 create table subject (

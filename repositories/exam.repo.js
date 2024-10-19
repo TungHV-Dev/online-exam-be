@@ -155,6 +155,52 @@ const getAttemptAnswer = async (attempt_id) => {
     return response.rows
 }
 
+const insertTestCases = async (testcases) => {
+    let commandSql = 
+        `insert into test_cases
+            (question_id, input_data, expected_output, is_sample_case, created_time, updated_time, is_deleted)
+        values `
+    
+    let index = 0
+    let params = []
+    for (let i = 0; i < testcases.length; i++) {
+        commandSql += ` ($${++index}::integer, $${++index}::text, $${++index}::text, $${++index}::integer, now(), now(), 0)`
+        if (i < testcases.length - 1) {
+            commandSql += ','
+        }
+
+        params.push(testcases[i].questionId, testcases[i].inputData, testcases[i].expectedOutput, testcases[i].isSampleCase)
+    }
+
+    commandSql += ' returning test_case_id;'
+    const response = await _postgresDB.query(commandSql, params)
+    return response
+}
+
+const deleteTestCases = async (examId) => {
+    const commandSql = 
+        `delete from test_cases where question_id in (select question_id from questions where exam_id = $1::integer);`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response
+}
+
+const getTestCasesByExamId = async (examId, getOnlySampleCase = false) => {
+    let querySql = 
+        `select * from test_cases t
+        where 
+            t.question_id in (
+                select q.question_id from questions q where q.exam_id = $1::integer and q.is_deleted = 0
+            ) `
+
+    if (getOnlySampleCase) {
+        querySql += ' and t.is_sample_case = 1 '
+    }
+    querySql += ' and t.is_deleted = 0 order by t.question_id, t.test_case_id asc '
+
+    const response = await _postgresDB.query(querySql, [examId])
+    return response.rows
+}
+
 module.exports = {
     insertExam,
     insertQuestions,
@@ -169,5 +215,8 @@ module.exports = {
     insertAttempt,
     insertAttemptAnswer,
     getAttempt,
-    getAttemptAnswer
+    getAttemptAnswer,
+    insertTestCases,
+    deleteTestCases,
+    getTestCasesByExamId
 }
