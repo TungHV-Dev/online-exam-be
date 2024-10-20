@@ -419,6 +419,7 @@ const viewExamByStudent = async (data, userId) => {
 
     const questions = await examRepo.getQuestionsByExamId(examId)
     const results = await examRepo.getResultsByExamId(examId)
+    const testcases = await examRepo.getTestCasesByExamId(examId, true)
     const attempt = await examRepo.getAttempt(userId, classId, examId)
     const userResults = await examRepo.getAttemptAnswer(attempt?.attempt_id || 0)
 
@@ -466,8 +467,17 @@ const viewExamByStudent = async (data, userId) => {
                 }
             })
         }
-        
         questionItem.results = resultList
+
+        let testcaseList = testcases?.filter(x => x.question_id === question.question_id)?.map(x => {
+            return {
+                isSampleCase: Boolean(x.is_sample_case),
+                inputData: x.input_data,
+                expectedOutput: x.expected_output
+            }
+        })
+        questionItem.testcases = testcaseList
+
         questionList.push(questionItem)
     }
     result.questions = questionList
