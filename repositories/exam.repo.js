@@ -12,18 +12,18 @@ const insertExam = async (classId, examName, description, totalQuestion, totalMi
 const insertQuestions = async (examId, questions) => {
     let commandSql = 
         `insert into questions 
-            (exam_id, question_number, question_type, question_content, created_time, updated_time, is_deleted)
+            (exam_id, question_number, question_type, question_content, created_time, updated_time, is_deleted, total_test_cases)
         values `
 
     let index = 0
     let params = []
     for (let i = 0; i < questions.length; i++) {
-        commandSql += ` ($${++index}::integer, $${++index}::integer, $${++index}::text, $${++index}::text, now(), now(), 0)`
+        commandSql += ` ($${++index}::integer, $${++index}::integer, $${++index}::text, $${++index}::text, now(), now(), 0, $${++index}::integer)`
         if (i < questions.length - 1) {
             commandSql += ','
         }
 
-        params.push(examId, Number(questions[i].questionNumber), questions[i].questionType || '', questions[i].questionContent || '')
+        params.push(examId, Number(questions[i].questionNumber), questions[i].questionType || '', questions[i].questionContent || '', Number(questions[i].testcases.length || 0))
     }
 
     commandSql += ' returning question_id;'
@@ -121,18 +121,25 @@ const insertAttempt = async (userId, classId, examId, startTime, endTime, score)
 
 const insertAttemptAnswer = async (attemptId, userResults) => {
     let commandSql = 
-        `insert into attempt_answer (attempt_id, question_id, choosed_result_key, choosed_result_value)
+        `insert into attempt_answer (attempt_id, question_id, choosed_result_key, choosed_result_value, submitted_code, total_correct_test_cases)
         values `
 
     let index = 0
     let params = []
     for (let i = 0; i < userResults.length; i++) {
-        commandSql += ` ($${++index}::integer, $${++index}::integer, $${++index}::integer, $${++index}::text)`
+        commandSql += ` ($${++index}::integer, $${++index}::integer, $${++index}::integer, $${++index}::text, $${++index}::text, $${++index}::integer)`
         if (i < userResults.length - 1) {
             commandSql += ','
         }
 
-        params.push(attemptId, userResults[i].questionId, userResults[i].choosedResultKey, userResults[i].choosedResultValue)
+        params.push(
+            attemptId, 
+            userResults[i].questionId, 
+            userResults[i].choosedResultKey || null, 
+            userResults[i].choosedResultValue || '', 
+            userResults[i].submittedCode || '', 
+            userResults[i].totalCorrectTestCases || null
+        )
     }
 
     const response = await _postgresDB.query(commandSql, params)
@@ -201,6 +208,20 @@ const getTestCasesByExamId = async (examId, getOnlySampleCase = false) => {
     return response.rows
 }
 
+const getQuestionByExamIdAndQuestionNumber = async (examId, questionNumber) => {
+    const querySql = 
+        `select * from questions where exam_id = $1::integer and question_number = $2::integer and is_deleted = 0;`
+    const response = await _postgresDB.query(querySql, [examId, questionNumber])
+    return response.rows[0]
+}
+
+const getTestCasesByQuestionId = async (questionId) => {
+    const querySql = 
+        `select * from test_cases where question_id = $1::integer and is_deleted = 0;`
+    const response = await _postgresDB.query(querySql, [questionId])
+    return response.rows
+}
+
 module.exports = {
     insertExam,
     insertQuestions,
@@ -218,5 +239,7 @@ module.exports = {
     getAttemptAnswer,
     insertTestCases,
     deleteTestCases,
-    getTestCasesByExamId
+    getTestCasesByExamId,
+    getQuestionByExamIdAndQuestionNumber,
+    getTestCasesByQuestionId
 }

@@ -3,3 +3,4 @@ node_modules
 .env.dev
 .env.prod
 *.pem
+google_drive_api_config.json

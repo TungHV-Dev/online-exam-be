@@ -19,7 +19,13 @@ const MASTER_DATA = {
     QUESTION_TYPE: {
         TYPE_1: 'Type_1',
         TYPE_2: 'Type_2',
-        TYPE_3: 'Type_3'
+        TYPE_3: 'Type_3',
+        TYPE_4: 'Type_4'
+    },
+    LANGUAGE_MAP: {
+        "c": { language: "c", version: "10.2.0" },
+        "cpp": { language: "c++", version: "10.2.0" },
+        "python": { language: "python", version: "3.10.0" },
     }
 }
 
