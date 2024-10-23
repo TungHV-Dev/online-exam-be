@@ -484,89 +484,6 @@ const viewExamByStudent = async (data, userId) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
-const submitExamResult = async (data, userId) => {
-    const { examId, startTime, endTime, questionResults } = data
-
-    const exam = await examRepo.getExamById(examId)
-    if (!exam) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Bài thi không tồn tại hoặc đã bị xóa khỏi hệ thống!')
-    }
-
-    // Tính điểm của bài thi
-    const totalQuestion = Number(exam?.total_question || 0)
-    const scorePerQuestion = 10 / totalQuestion
-    let totalScore = 0
-
-    const questions = await examRepo.getQuestionsByExamId(examId)
-    const results = await examRepo.getResultsByExamId(examId)
-
-    let questionMap = new Map()
-    for (const question of questionResults) {
-        questionMap.set(question.questionNumber, question.results)
-    }
-
-    let userResultInsert = []
-    for (const question of questions) {
-        let resultMap = new Map()
-        results?.filter(x => x.question_id === question.question_id)?.map(x => {
-            resultMap.set(x.result_key, {
-                resultValue: x.result_value,
-                isCorrect: Boolean(x.is_correct)
-            })
-        })
-
-        let userResults = questionMap.get(question.question_number)
-        let pass = true
-
-        for (const result of userResults) {
-            const examResult = resultMap.get(result.resultKey)
-            if (question.question_type === MASTER_DATA.QUESTION_TYPE.TYPE_3) {
-                if (examResult.resultValue !== result.userResult) {
-                    pass = false
-                }
-                userResultInsert.push({
-                    questionId: question.question_id,
-                    choosedResultKey: result.resultKey,
-                    choosedResultValue: result.userResult
-                })
-            } else {
-                if ((examResult.isCorrect && !result.userChoosed) || (!examResult.isCorrect && result.userChoosed)) {
-                    pass = false
-                }
-                if (result.userChoosed) {
-                    userResultInsert.push({
-                        questionId: question.question_id,
-                        choosedResultKey: result.resultKey,
-                        choosedResultValue: result.userResult
-                    })
-                }
-            }
-        }
-        
-        if (pass) {
-            totalScore += scorePerQuestion
-        }
-    }
-
-    // Lưu kết quả làm bài
-    const insertResult1 = await examRepo.insertAttempt(userId, exam?.class_id || 0, examId, startTime, endTime, Number(totalScore.toFixed(2)))
-    if (insertResult1.rowCount === 0 || !insertResult1.rows[0].attempt_id) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
-    }
-
-    const attemptId = insertResult1.rows[0].attempt_id
-    if (userResultInsert.length > 0) {
-        const insertResult2 = await examRepo.insertAttemptAnswer(attemptId, userResultInsert)
-        if (insertResult2.rowCount !== userResultInsert.length) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
-        }
-    }
-
-    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', {
-        score: totalScore
-    })
-}
-
 const getMasterDataSubjects = async (params) => {
     const subjects = await classRepo.getAllSubject()
     const results = subjects.map(s => {
@@ -592,6 +509,5 @@ module.exports = {
     deleteExam,
     viewExam,
     viewExamByStudent,
-    submitExamResult,
     getMasterDataSubjects
 }

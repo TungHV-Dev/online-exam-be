@@ -80,7 +80,8 @@ create table exam (
 	Created_Time 		timestamp 		null,
 	Updated_Time		timestamp		null,
 	Is_Deleted			int				null,
-	Max_Score			numeric			null
+	Max_Score			numeric			null,
+	is_in_storage 		int 			null
 );
 
 create table attempt_answer (

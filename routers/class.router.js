@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const constant = require('../utils/constant')
 const classService = require('../services/class.service')
+const examService = require('../services/exam.service')
 const classValidator = require('../validation/class.validator')
 const { verifyToken } = require('../middleware/jwt.middleware')
 const { verifyRole } = require('../middleware/role.middleware')
@@ -360,7 +361,7 @@ router.post('/exam/delete', [verifyToken, verifyRole('view_list_exam_created')],
 router.post('/exam/submit-result', [verifyToken, verifyRole('view_list_exam_need_done')], async (req, res) => {
     try {
         const payload = req.body
-        const result = await classService.submitExamResult(payload, req.userId)
+        const result = await examService.submitExamResult(payload, req.userId)
         if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
@@ -374,6 +375,7 @@ router.post('/exam/submit-result', [verifyToken, verifyRole('view_list_exam_need
             message: result.message || constant.RESPONSE_MESSAGE.FAIL,
         })
     } catch (e) {
+        throw e
         logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
         return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
             code: constant.RESPONSE_CODE.FAIL,

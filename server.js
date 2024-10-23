@@ -5,7 +5,9 @@ const session = require('express-session')
 const logger = require('./logger/logger')
 global.XMLHttpRequest = require('xhr2')
 
+// Kết nối tới CSDL Postgres
 const postgresConnection = require('./connections/postgres')
+global.connectPostgreCount = 0
 postgresConnection.createConnectionPool()
 
 const bodyParser = require('body-parser')
