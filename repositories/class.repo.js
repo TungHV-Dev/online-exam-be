@@ -19,7 +19,7 @@ const getClassById = async (classId) => {
 
 const getClassByIdV2 = async (classId) => {
     const querySql = 
-        `select c.*, u.user_name as teacher_user_name, u.full_name as teacher_full_name, s.subject_code, s.subject_name
+        `select c.*, u.user_name as teacher_user_name, u.full_name as teacher_full_name, s.subject_id, s.subject_code, s.subject_name
         from "class" c 
         inner join users u on u.user_id = c.teacher_id
         inner join subject s on s.subject_id = c.subject_id and s.is_deleted = 0

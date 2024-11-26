@@ -1,11 +1,12 @@
-const insertExam = async (classId, examName, description, totalQuestion, totalMinutes, publish) => {
+const insertExam = async (classId, examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage) => {
+    let _classId = (classId && classId > 0) ? classId : null
     const commandSql = 
         `insert into exam 
-            (class_id, exam_name, description, total_question, total_minutes, is_published, created_time, updated_time, is_deleted)
+            (class_id, exam_name, description, total_question, total_minutes, is_published, created_time, updated_time, is_deleted, subject_id, is_in_storage)
         values 
-            ($1::integer, $2::text, $3::text, $4::integer, $5::integer, $6::integer, now(), now(), 0)
+            ($1::integer, $2::text, $3::text, $4::integer, $5::integer, $6::integer, now(), now(), 0, $7::integer, $8::integer)
         returning exam_id;`
-    const response = await _postgresDB.query(commandSql, [classId, examName, description, totalQuestion, totalMinutes, publish])
+    const response = await _postgresDB.query(commandSql, [_classId, examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage])
     return response
 }
 

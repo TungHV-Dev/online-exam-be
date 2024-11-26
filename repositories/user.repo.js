@@ -65,7 +65,12 @@ const getUserByEmail = async (email) => {
 }
 
 const getUserByIdAndName = async (userId, userName) => {
-    const querySql = `select * from users where user_id = $1::integer and user_name = $2::text and is_deleted = 0;`
+    const querySql = 
+        `select * from users 
+        where 
+            user_id = $1::integer 
+            and user_name = $2::text 
+            and is_deleted = 0;`
     const response = await _postgresDB.query(querySql, [userId, userName])
     return response.rows[0]
 }

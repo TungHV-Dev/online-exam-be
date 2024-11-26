@@ -80,6 +80,7 @@ const getClassDetail = async (data, roleId) => {
         className: classExist.class_name,
         teacherName: `${classExist.teacher_full_name} (${classExist.teacher_user_name})`,
         description: classExist.description,
+        subjectId: classExist.subject_id,
         subjectCode: classExist.subject_code,
         subjectName: classExist.subject_name
     }
@@ -178,20 +179,16 @@ const addDocument = async (data, roleId) => {
 }
 
 const createExam = async (data, roleId) => {
-    const { classId, examName, description, totalMinutes, publish, questions, teacherId } = data
+    const { classId, examName, description, totalMinutes, publish, questions, teacherId, subjectId, isInStorage } = data
 
     const classExist = await classRepo.getClassById(classId)
-    if (!classExist) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
-    }
-
-    if (roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
+    if (classExist && roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
         if (classExist.teacher_id !== teacherId) {
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Tạo bài thi thất bại. Người dùng không phải giáo viên của lớp học!')
         }
     }
 
-    const insertExamResult = await examRepo.insertExam(classId, examName, description, questions.length, totalMinutes, Number(publish))
+    const insertExamResult = await examRepo.insertExam(classId, examName, description, questions.length, totalMinutes, Number(publish), subjectId, Number(isInStorage))
     if (insertExamResult.rowCount === 0 || !insertExamResult.rows[0].exam_id) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
