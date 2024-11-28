@@ -8,6 +8,24 @@ const complieCodeValidator = function (data) {
     return new ResponseValidator(false, 'Thông tin đầu vào không hợp lệ!')
 }
 
+const createExamValidator = function (data) {
+    if (data.questions && Array.isArray(data.questions)) {
+        return new ResponseValidator(true)
+    }
+
+    return new ResponseValidator(false, 'Thông tin đầu vào không hợp lệ!')
+}
+
+const updateExamValidator = function (data) {
+    if (data.questions && Array.isArray(data.questions)) {
+        return new ResponseValidator(true)
+    }
+
+    return new ResponseValidator(false, 'Thông tin đầu vào không hợp lệ!')
+}
+
 module.exports = {
-    complieCodeValidator
+    complieCodeValidator,
+    createExamValidator,
+    updateExamValidator
 }
