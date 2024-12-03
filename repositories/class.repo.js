@@ -69,7 +69,12 @@ const getClassListUserNotJoin = async (userId) => {
                 select count(uc2.user_id) from user_class uc2 where uc2.class_id = c.class_id and uc2.is_deleted = 0
             ) as total_student,
             (
-                select count(e.exam_id) from exam e where e.class_id = c.class_id and e.is_published = 1 and e.is_deleted = 0
+                select count(e.exam_id) 
+                from exam e
+                where 
+                    e.exam_id in (
+                        select ec.exam_id from exam_class ec where ec.class_id = c.class_id
+                    ) and e.is_published = 1 and e.is_deleted = 0
             ) as total_exam
         from "class" c 
         left join users u on u.user_id = c.teacher_id and u.is_deleted = 0
@@ -106,9 +111,12 @@ const getListExamNeedDonePaging = async (classId, userId, offset = 0, limit = 10
             case when ue.attempt_id is null then 0 else 1 end as status
         from exam e 
         left join attempts ue 
-            on ue.exam_id = e.exam_id and ue.class_id = e.class_id 
+            on ue.exam_id = e.exam_id
             and ue.user_id = $1::integer and ue.is_deleted = 0
-        where e.class_id = $2::integer and e.is_published = 1 and e.is_deleted = 0
+        where 
+            e.exam_id in (
+                select exam_id from exam_class ec where ec.class_id = $2::integer
+            ) and e.is_published = 1 and e.is_deleted = 0
         order by e.exam_name 
         offset $3::integer
         limit $4::integer;`
@@ -117,9 +125,12 @@ const getListExamNeedDonePaging = async (classId, userId, offset = 0, limit = 10
         `select count(e.exam_id) as total
         from exam e 
         left join attempts ue 
-            on ue.exam_id = e.exam_id and ue.class_id = e.class_id 
+            on ue.exam_id = e.exam_id
             and ue.user_id = $1::integer and ue.is_deleted = 0
-        where e.class_id = $2::integer and e.is_published = 1 and e.is_deleted = 0;`
+        where 
+            e.exam_id in (
+                select exam_id from exam_class ec where ec.class_id = $2::integer
+            ) and e.is_published = 1 and e.is_deleted = 0;`
 
     const resultPaging = await Promise.all([
         _postgresDB.query(querySql, [userId, classId, offset, limit]),
@@ -134,17 +145,23 @@ const getListExamNeedDonePaging = async (classId, userId, offset = 0, limit = 10
 
 const getListExamCreatedPaging = async (classId, offset = 0, limit = 10) => {
     const querySql = 
-        `select exam_id, exam_name, total_question, total_minutes, is_published 
-        from exam 
-        where class_id = $1::integer and is_deleted = 0
-        order by exam_name 
+        `select e.exam_id, e.exam_name, e.total_question, e.total_minutes, e.is_published 
+        from exam e
+        where
+            e.exam_id in (
+                select ec.exam_id from exam_class ec where ec.class_id = $1::integer
+            ) and is_deleted = 0
+        order by e.exam_name 
         offset $2::integer
         limit $3::integer;`
 
     const totalSql = 
-        `select count(exam_id) as total
-        from exam 
-        where class_id = $1::integer and is_deleted = 0;`
+        `select count(e.exam_id) as total
+        from exam e
+        where
+            e.exam_id in (
+                select ec.exam_id from exam_class ec where ec.class_id = $1::integer
+            ) and is_deleted = 0;`
 
     const resultPaging = await Promise.all([
         _postgresDB.query(querySql, [classId, offset, limit]),

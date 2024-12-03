@@ -13,6 +13,19 @@ const getAllTeacher = async () => {
     return teachers
 }
 
+const getAllExamCreators = async () => {
+    const result = await Promise.all([
+        userRepo.getUsers({ roleId: masterData.ROLE.ROLE_ID.ADMIN }),
+        userRepo.getUsers({ roleId: masterData.ROLE.ROLE_ID.TEACHER })
+    ])
+
+    const admins = result[0] || []
+    const teachers = result[1] || []
+    const creators = [...admins, ...teachers]
+
+    return creators
+}
+
 const getAllRoles = async () => {
     const roles = await roleRepo.getAllRoles()
     return roles
@@ -68,6 +81,7 @@ const updateUserInfor = async (data) => {
 
 module.exports = {
     getAllTeacher,
+    getAllExamCreators,
     getAllRoles,
     searchUsers,
     getUserInfor,

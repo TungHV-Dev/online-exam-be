@@ -1,12 +1,21 @@
-const insertExam = async (classId, examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage) => {
-    let _classId = (classId && classId > 0) ? classId : null
+const insertExam = async (examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage, creatorId) => {
     const commandSql = 
         `insert into exam 
-            (class_id, exam_name, description, total_question, total_minutes, is_published, created_time, updated_time, is_deleted, subject_id, is_in_storage)
+            (exam_name, description, total_question, total_minutes, is_published, created_time, updated_time, is_deleted, subject_id, is_in_storage, creator_id)
         values 
-            ($1::integer, $2::text, $3::text, $4::integer, $5::integer, $6::integer, now(), now(), 0, $7::integer, $8::integer)
+            ($1::text, $2::text, $3::integer, $4::integer, $5::integer, now(), now(), 0, $6::integer, $7::integer, $8::integer)
         returning exam_id;`
-    const response = await _postgresDB.query(commandSql, [_classId, examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage])
+    const response = await _postgresDB.query(commandSql, [examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage, creatorId])
+    return response
+}
+
+const insertExamClass = async (exam_id, class_id) => {
+    const commandSql = 
+        `insert into exam_class (exam_id, class_id)
+        values ($1::integer, $2::integer)
+        returning id;`
+
+    const response = await _postgresDB.query(commandSql, [exam_id, class_id])
     return response
 }
 
@@ -223,8 +232,62 @@ const getTestCasesByQuestionId = async (questionId) => {
     return response.rows
 }
 
+const searchExam = async (limit, offset, subjectId, creatorId) => {
+    let params = []
+    let paramIndex = 0
+    let condition = ''
+    if (subjectId) {
+        paramIndex++
+        params.push(subjectId)
+        condition += ` and e.subject_id = $${paramIndex}::integer `
+    }
+
+    if (creatorId) {
+        paramIndex++
+        params.push(creatorId)
+        condition += ` and e.creator_id = $${paramIndex}::integer `
+    }
+
+    condition += ' and e.is_deleted = 0 and e.is_in_storage = 1 '
+    condition = condition.trim()
+    if (condition.startsWith('and')) {
+        condition = condition.slice(3)
+    }
+
+    const querySql = 
+        `select 
+            e.exam_id, s.subject_name, e.exam_name, e.total_question, e.total_minutes, 
+            u.full_name, u.user_name, e.created_time
+        from exam e 
+        left join subject s on s.subject_id = e.subject_id and s.is_deleted = 0
+        left join users u on u.user_id = e.creator_id and u.is_deleted = 0
+        where ${condition} 
+        order by e.exam_name 
+        offset $${++paramIndex}::integer
+        limit $${++paramIndex}::integer;`
+
+    const totalSql = 
+        `select 
+            count(e.exam_id) as total
+        from exam e 
+        left join subject s on s.subject_id = e.subject_id and s.is_deleted = 0
+        left join users u on u.user_id = e.creator_id and u.is_deleted = 0
+        where ${condition};`
+
+    const response = await Promise.all([
+        _postgresDB.query(querySql, [...params, offset, limit]),
+        _postgresDB.query(totalSql, params)
+    ])
+
+    return {
+        searchData: response[0]?.rows || [],
+        total: response[1]?.rows[0]?.total || 0
+    }
+}
+
 module.exports = {
     insertExam,
+    insertExamClass,
     insertQuestions,
     insertResults,
     deleteExam,
@@ -242,5 +305,6 @@ module.exports = {
     deleteTestCases,
     getTestCasesByExamId,
     getQuestionByExamIdAndQuestionNumber,
-    getTestCasesByQuestionId
+    getTestCasesByQuestionId,
+    searchExam
 }

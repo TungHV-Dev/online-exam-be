@@ -6,6 +6,7 @@ const classRepo = require('../repositories/class.repo')
 const examRepo = require('../repositories/exam.repo')
 const logger = require('../logger/logger');
 const MASTER_DATA = require('../utils/master-data');
+const moment = require('moment')
 
 const compileCode = async (examId, questionNumber, language, code) => {
     if (!LANGUAGE_MAP[language]) {
@@ -187,7 +188,7 @@ const submitExamResult = async (data, userId) => {
     })
 }
 
-const createExam = async (data, roleId) => {
+const createExam = async (data, roleId, userId) => {
     const { classId, examName, description, totalMinutes, publish, questions, teacherId, subjectId, isInStorage } = data
 
     const classExist = await classRepo.getClassById(classId)
@@ -197,12 +198,20 @@ const createExam = async (data, roleId) => {
         }
     }
 
-    const insertExamResult = await examRepo.insertExam(classId, examName, description, questions.length, totalMinutes, Number(publish), subjectId, Number(isInStorage))
+    const insertExamResult = await examRepo.insertExam(examName, description, questions.length, totalMinutes, Number(publish), subjectId, Number(isInStorage), Number(userId))
     if (insertExamResult.rowCount === 0 || !insertExamResult.rows[0].exam_id) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
 
     const examId = Number(insertExamResult.rows[0].exam_id)
+
+    if (classExist) {
+        const insertExamClassRs = await examRepo.insertExamClass(examId, classId)
+        if (insertExamClassRs.rowCount === 0 || !insertExamClassRs.rows[0].id) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+        }
+    }
+
     if (questions.length > 0) {
         const insertQuestionResult = await examRepo.insertQuestions(examId, questions)
         if (insertQuestionResult.rowCount !== questions.length) {
@@ -485,6 +494,27 @@ const viewExamByStudent = async (data, userId) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
+const searchExam = async (page, size, subjectId, creatorId) => {
+    const limit = size
+    const offset = page * size
+
+    let searchResult = await examRepo.searchExam(limit, offset, subjectId, creatorId)
+    let formatedArr = []
+    for (const item of searchResult.searchData) {
+        formatedArr.push({
+            examId: item.exam_id,
+            subjectName: item.subject_name || '',
+            examName: item.exam_name || '',
+            totalQuestions: item.total_question || 0,
+            totalMinutes: item.total_minutes || 0,
+            creator: item.full_name && item.user_name ? `${item.full_name} (${item.user_name})` : item.user_name ? item.user_name : '',
+            createdDate: item.created_time ? moment(item.created_time).format(constant.DATE_FORMAT.DD_MM_YYYY) : ''
+        })
+    }
+    searchResult.searchData = formatedArr
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', searchResult)
+}
+
 
 module.exports = {
     compileCode,
@@ -493,5 +523,6 @@ module.exports = {
     updateExam,
     deleteExam,
     viewExam, 
-    viewExamByStudent
+    viewExamByStudent,
+    searchExam
 }

@@ -69,7 +69,6 @@ create table attempts (
 
 create table exam (
 	Exam_Id				serial			not null primary key,
-	Class_Id			int				null,
 	subject_id 			int 			null,
 	exam_code 			uuid 			null,
 	Exam_Name			varchar(1000)	null,
@@ -81,7 +80,14 @@ create table exam (
 	Updated_Time		timestamp		null,
 	Is_Deleted			int				null,
 	Max_Score			numeric			null,
-	is_in_storage 		int 			null
+	is_in_storage 		int 			null,
+	creator_id			int				null
+);
+
+create table exam_class (
+	Id					serial		not null primary key,
+	Exam_Id 			int			null,
+	Class_Id 			int			null
 );
 
 create table attempt_answer (

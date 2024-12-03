@@ -36,7 +36,10 @@ const getTopClassHasMaxAvgScore = async (topNumber) => {
             ) as total_student,
             (
                 select count(e.exam_id) from exam e 
-                where e.class_id = c.class_id and e.is_published = 1 and e.is_deleted = 0 
+                where 
+                    e.exam_id in (
+                        select ec.exam_id from exam_class ec where ec.class_id = c.class_id
+                    ) and e.is_published = 1 and e.is_deleted = 0 
             ) as total_exam
         from (
             select class_id, avg(score) as avg_score, count(attempt_id) as total_joined_exam

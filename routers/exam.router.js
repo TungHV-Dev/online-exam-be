@@ -82,7 +82,7 @@ router.post('/create', [verifyToken, verifyRole('view_list_exam_created')], asyn
             })
         }
 
-        const result = await examService.createExam(payload, req.roleId)
+        const result = await examService.createExam(payload, req.roleId, req.userId)
         if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
@@ -210,16 +210,22 @@ router.get('/infor-for-student', [verifyToken, verifyRole('view_list_exam_need_d
     }
 })
 
-router.get('/search', async (req, res) => {
+router.get('/search', [verifyToken], async (req, res) => {
     try {
         const page = req.query.page || 0
         const size = req.query.size || 10
+        const subjectId = req.query.subjectId || null
+        const creatorId = req.query.creatorId || null
         
+        const result = await examService.searchExam(page, size, subjectId, creatorId)
+        if (result.resultCode === constant.RESPONSE_CODE.SUCCESS) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result.data
+            })
+        }
         
-        
-
-
-
         return res.status(constant.HTTP_STATUS_CODE.OK).json({
             code: constant.RESPONSE_CODE.NOT_FOUND,
             message: constant.RESPONSE_MESSAGE.NOT_FOUND,
