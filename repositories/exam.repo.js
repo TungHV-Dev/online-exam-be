@@ -64,7 +64,7 @@ const insertResults = async (results) => {
 }
 
 const deleteExam = async (examId) => {
-    const commandSql = `update exam set is_deleted = 1 where exam_id = $1::integer;`
+    const commandSql = `update exam set is_deleted = 1, updated_time = now() where exam_id = $1::integer;`
     const response = await _postgresDB.query(commandSql, [examId])
     return response
 }
@@ -257,7 +257,7 @@ const searchExam = async (limit, offset, subjectId, creatorId) => {
     const querySql = 
         `select 
             e.exam_id, s.subject_name, e.exam_name, e.total_question, e.total_minutes, 
-            u.full_name, u.user_name, e.created_time
+            e.creator_id, u.full_name, u.user_name, e.created_time
         from exam e 
         left join subject s on s.subject_id = e.subject_id and s.is_deleted = 0
         left join users u on u.user_id = e.creator_id and u.is_deleted = 0
@@ -285,6 +285,13 @@ const searchExam = async (limit, offset, subjectId, creatorId) => {
     }
 }
 
+const deleteExamFromAllClasses = async (examId) => {
+    const commandSql = 
+        `delete from exam_class where exam_id = $1::integer`
+    const response = await _postgresDB.query(commandSql, [examId])
+    return response
+}
+
 module.exports = {
     insertExam,
     insertExamClass,
@@ -306,5 +313,6 @@ module.exports = {
     getTestCasesByExamId,
     getQuestionByExamIdAndQuestionNumber,
     getTestCasesByQuestionId,
-    searchExam
+    searchExam,
+    deleteExamFromAllClasses
 }

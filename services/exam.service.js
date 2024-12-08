@@ -328,17 +328,18 @@ const updateExam = async (data, roleId) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', examId)
 }
 
-const deleteExam = async (data, roleId) => {
-    const { classId, teacherId, examId } = data
+const deleteExam = async (data, currentUserId, currentRoleId) => {
+    const { examId } = data
 
-    const classExist = await classRepo.getClassById(classId)
-    if (!classExist) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không có quyền xoá bài thi!')
     }
 
-    if (roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
-        if (classExist.teacher_id !== teacherId) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Xóa bài thi thất bại. Người dùng không phải giáo viên của lớp học!')
+    const exam = await examRepo.getExamById(examId)
+    const examCreatorId = exam.creator_id ? Number(exam.creator_id) : null
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.TEACHER) {
+        if (currentUserId !== examCreatorId) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không có quyền xoá bài thi!')
         }
     }
 
@@ -347,7 +348,8 @@ const deleteExam = async (data, roleId) => {
         examRepo.deleteResults(examId)
     ])
     await examRepo.deleteQuestions(examId)
-
+    await examRepo.deleteExamFromAllClasses(examId)
+    
     const deletedExam = await examRepo.deleteExam(examId)
     if (deletedExam.rowCount === 0) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
@@ -494,13 +496,14 @@ const viewExamByStudent = async (data, userId) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
-const searchExam = async (page, size, subjectId, creatorId) => {
+const searchExam = async (page, size, subjectId, creatorId, currentUserId, currentRoleId) => {
     const limit = size
     const offset = page * size
 
     let searchResult = await examRepo.searchExam(limit, offset, subjectId, creatorId)
     let formatedArr = []
     for (const item of searchResult.searchData) {
+        const examCreatorId = item.creator_id || 0
         formatedArr.push({
             examId: item.exam_id,
             subjectName: item.subject_name || '',
@@ -508,7 +511,11 @@ const searchExam = async (page, size, subjectId, creatorId) => {
             totalQuestions: item.total_question || 0,
             totalMinutes: item.total_minutes || 0,
             creator: item.full_name && item.user_name ? `${item.full_name} (${item.user_name})` : item.user_name ? item.user_name : '',
-            createdDate: item.created_time ? moment(item.created_time).format(constant.DATE_FORMAT.DD_MM_YYYY) : ''
+            creatorId: examCreatorId,
+            createdDate: item.created_time ? moment(item.created_time).format(constant.DATE_FORMAT.DD_MM_YYYY) : '',
+            hasViewRight: currentRoleId !== MASTER_DATA.ROLE.ROLE_ID.STUDENT,
+            hasEditRight: currentRoleId === MASTER_DATA.ROLE.ROLE_ID.ADMIN || (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.TEACHER && currentUserId === examCreatorId),
+            hasDeleteRight: currentRoleId === MASTER_DATA.ROLE.ROLE_ID.ADMIN || (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.TEACHER && currentUserId === examCreatorId)
         })
     }
     searchResult.searchData = formatedArr
