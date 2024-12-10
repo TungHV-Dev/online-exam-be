@@ -2,6 +2,7 @@ const { ResponseService } = require('../model/response')
 const { LANGUAGE_MAP } = require('../utils/master-data')
 const constant = require('../utils/constant')
 const axios = require("axios");
+const { v4: uuidv4 } = require('uuid')
 const classRepo = require('../repositories/class.repo')
 const examRepo = require('../repositories/exam.repo')
 const logger = require('../logger/logger');
@@ -188,17 +189,18 @@ const submitExamResult = async (data, userId) => {
     })
 }
 
-const createExam = async (data, roleId, userId) => {
-    const { classId, examName, description, totalMinutes, publish, questions, teacherId, subjectId, isInStorage } = data
+const createExam = async (data, currentUserId, currentRoleId) => {
+    const { classId, examName, description, totalMinutes, publish, questions, subjectId, isInStorage } = data
 
     const classExist = await classRepo.getClassById(classId)
-    if (classExist && roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
-        if (classExist.teacher_id !== teacherId) {
+    if (classExist && currentRoleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
+        if (classExist.teacher_id !== currentUserId) {
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Tạo bài thi thất bại. Người dùng không phải giáo viên của lớp học!')
         }
     }
 
-    const insertExamResult = await examRepo.insertExam(examName, description, questions.length, totalMinutes, Number(publish), subjectId, Number(isInStorage), Number(userId))
+    const examCode = uuidv4()
+    const insertExamResult = await examRepo.insertExam(examName, description, questions.length, totalMinutes, Number(publish), subjectId, Number(isInStorage), Number(currentUserId), examCode)
     if (insertExamResult.rowCount === 0 || !insertExamResult.rows[0].exam_id) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
@@ -257,17 +259,18 @@ const createExam = async (data, roleId, userId) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', examId)
 }
 
-const updateExam = async (data, roleId) => {
-    const { examId, classId, examName, description, totalMinutes, publish, questions, teacherId } = data
+const updateExam = async (data, currentUserId, currentRoleId) => {
+    const { examId, examName, description, totalMinutes, publish, questions } = data
 
-    const classExist = await classRepo.getClassById(classId)
-    if (!classExist) {
-        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Lớp học không tồn tại!')
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không có quyền sửa bài thi!')
     }
 
-    if (roleId !== MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
-        if (classExist.teacher_id !== teacherId) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Cập nhật bài thi thất bại. Người dùng không phải giáo viên của lớp học!')
+    const exam = await examRepo.getExamById(examId)
+    const examCreatorId = exam.creator_id ? Number(exam.creator_id) : null
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.TEACHER) {
+        if (currentUserId !== examCreatorId) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không có quyền sửa bài thi!')
         }
     }
 
@@ -326,6 +329,33 @@ const updateExam = async (data, roleId) => {
     }
 
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', examId)
+}
+
+const pushExamToStorage = async (data, currentUserId, currentRoleId) => {
+    const { examId } = data
+
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không có quyền đẩy đề thi vào kho đề!')
+    }
+
+    const exam = await examRepo.getExamById(examId)
+    if (!exam) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đề thi không tồn tại!')
+    }
+
+    const examCreatorId = exam.creator_id ? Number(exam.creator_id) : null
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.TEACHER) {
+        if (currentUserId !== examCreatorId) {
+            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không có quyền đẩy đề thi vào kho đề!')
+        }
+    }
+
+    const pushResult = await examRepo.pushExamToStorage(examId)
+    if (pushResult.rowCount === 0) {
+        return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
+    }
+
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS)
 }
 
 const deleteExam = async (data, currentUserId, currentRoleId) => {
@@ -506,6 +536,7 @@ const searchExam = async (page, size, subjectId, creatorId, currentUserId, curre
         const examCreatorId = item.creator_id || 0
         formatedArr.push({
             examId: item.exam_id,
+            examCode: String(item.exam_code || ''),
             subjectName: item.subject_name || '',
             examName: item.exam_name || '',
             totalQuestions: item.total_question || 0,
@@ -522,14 +553,30 @@ const searchExam = async (page, size, subjectId, creatorId, currentUserId, curre
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', searchResult)
 }
 
+const getBasicExamInforByExamCode = async (examCode) => {
+    const exam = await examRepo.getExambyExamCode(examCode)
+    let result = null
+    if (exam) {
+        result = {
+            examId: exam.exam_id,
+            examName: exam.exam_name || '',
+            totalMinutes: exam.total_minutes || 0
+        }
+    }
+
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
+}
+
 
 module.exports = {
     compileCode,
     submitExamResult,
     createExam,
     updateExam,
+    pushExamToStorage,
     deleteExam,
     viewExam, 
     viewExamByStudent,
-    searchExam
+    searchExam,
+    getBasicExamInforByExamCode
 }

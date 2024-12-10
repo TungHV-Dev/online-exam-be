@@ -116,12 +116,37 @@ router.post('/update', [verifyToken, verifyRole('view_list_exam_created')], asyn
             })
         }
 
-        const result = await examService.updateExam(payload, req.roleId)
+        const result = await examService.updateExam(payload, req.userId, req.roleId)
         if (result.resultCode === 0) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,
                 message: constant.RESPONSE_MESSAGE.SUCCESS,
                 data: result.data
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
+        })
+    } catch (e) {
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
+router.post('/push-storage', [verifyToken, verifyRole('view_list_exam_created')], async (req, res) => {
+    try {
+        const payload = req.body
+        const result = await examService.pushExamToStorage(payload, req.userId, req.roleId)
+
+        if (result.resultCode === 0) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS
             })
         }
 
@@ -218,6 +243,31 @@ router.get('/search', [verifyToken], async (req, res) => {
         const creatorId = req.query.creatorId || null
         
         const result = await examService.searchExam(page, size, subjectId, creatorId, Number(req.userId), Number(req.roleId))
+        if (result.resultCode === constant.RESPONSE_CODE.SUCCESS) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result.data
+            })
+        }
+        
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.NOT_FOUND,
+            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+        })
+    } catch (e) {
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
+router.get('/infor-basic', [verifyToken], async (req, res) => {
+    try {
+        const examCode = req.query.examCode || ''
+        const result = await examService.getBasicExamInforByExamCode(examCode)
         if (result.resultCode === constant.RESPONSE_CODE.SUCCESS) {
             return res.status(constant.HTTP_STATUS_CODE.OK).json({
                 code: constant.RESPONSE_CODE.SUCCESS,

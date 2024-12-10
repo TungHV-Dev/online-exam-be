@@ -145,7 +145,7 @@ const getListExamNeedDonePaging = async (classId, userId, offset = 0, limit = 10
 
 const getListExamCreatedPaging = async (classId, offset = 0, limit = 10) => {
     const querySql = 
-        `select e.exam_id, e.exam_name, e.total_question, e.total_minutes, e.is_published 
+        `select e.exam_id, e.exam_name, e.total_question, e.total_minutes, e.is_published, e.is_in_storage
         from exam e
         where
             e.exam_id in (

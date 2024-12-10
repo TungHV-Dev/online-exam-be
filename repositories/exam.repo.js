@@ -1,11 +1,11 @@
-const insertExam = async (examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage, creatorId) => {
+const insertExam = async (examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage, creatorId, examCode) => {
     const commandSql = 
         `insert into exam 
-            (exam_name, description, total_question, total_minutes, is_published, created_time, updated_time, is_deleted, subject_id, is_in_storage, creator_id)
+            (exam_name, description, total_question, total_minutes, is_published, created_time, updated_time, is_deleted, subject_id, is_in_storage, creator_id, exam_code)
         values 
-            ($1::text, $2::text, $3::integer, $4::integer, $5::integer, now(), now(), 0, $6::integer, $7::integer, $8::integer)
+            ($1::text, $2::text, $3::integer, $4::integer, $5::integer, now(), now(), 0, $6::integer, $7::integer, $8::integer, $9)
         returning exam_id;`
-    const response = await _postgresDB.query(commandSql, [examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage, creatorId])
+    const response = await _postgresDB.query(commandSql, [examName, description, totalQuestion, totalMinutes, publish, subjectId, isInStorage, creatorId, examCode])
     return response
 }
 
@@ -88,15 +88,33 @@ const updateExam = async (examId, examName, description, totalQuestion, totalMin
         set 
             exam_name = $1::text, description = $2::text, total_question = $3::integer, 
             total_minutes = $4::integer, is_published = $5::integer, updated_time = now()
-        where exam_id = $6::integer;`
+        where exam_id = $6::integer and is_deleted = 0;`
     
     const response = await _postgresDB.query(commandSql, [examName, description, totalQuestion, totalMinutes, publish, examId])
+    return response
+}
+
+const pushExamToStorage = async (examId) => {
+    const commandSql = 
+        `update exam 
+        set 
+            is_in_storage = 1, updated_time = now()
+        where exam_id = $1::integer and is_published = 1 and is_deleted = 0;`
+    
+    const response = await _postgresDB.query(commandSql, [examId])
     return response
 }
 
 const getExamById = async (examId) => {
     const querySql = `select * from exam where exam_id = $1::integer and is_deleted = 0;`
     const response = await _postgresDB.query(querySql, [examId])
+    return response.rows[0]
+}
+
+const getExambyExamCode = async (examCode) => {
+    const querySql = 
+        `select * from exam where exam_code = $1 and is_deleted = 0;`
+    const response = await _postgresDB.query(querySql, [examCode])
     return response.rows[0]
 }
 
@@ -257,7 +275,7 @@ const searchExam = async (limit, offset, subjectId, creatorId) => {
     const querySql = 
         `select 
             e.exam_id, s.subject_name, e.exam_name, e.total_question, e.total_minutes, 
-            e.creator_id, u.full_name, u.user_name, e.created_time
+            e.creator_id, u.full_name, u.user_name, e.created_time, e.exam_code
         from exam e 
         left join subject s on s.subject_id = e.subject_id and s.is_deleted = 0
         left join users u on u.user_id = e.creator_id and u.is_deleted = 0
@@ -301,7 +319,9 @@ module.exports = {
     deleteQuestions,
     deleteResults,
     updateExam,
+    pushExamToStorage,
     getExamById,
+    getExambyExamCode,
     getQuestionsByExamId,
     getResultsByExamId,
     insertAttempt,
