@@ -21,9 +21,10 @@ const getUsers = async (condition) => {
 const insertUser = async (userInfor) => {
     const commandSql = 
         `insert into users 
-            (user_name, password_hash, full_name, role_id, email, gender, address, phone_number, date_of_birth, created_time, updated_time, is_deleted, is_locked)
+            (user_name, password_hash, full_name, role_id, email, gender, address, phone_number, 
+            date_of_birth, created_time, updated_time, is_deleted, is_locked, login_failed_counter)
         values 
-            ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now(), 0, 0)
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now(), 0, 0, 0)
         returning user_id;`
 
     const response = await _postgresDB.query(commandSql, [
@@ -124,6 +125,31 @@ const lockUser = async (userId, lock) => {
     return response
 }
 
+const updateLockUserInfor = async (userId, isReset = false) => {
+    let commandSql = 
+        `update users
+        set 
+            login_failed_counter = case when login_failed_counter is not null then login_failed_counter + 1 else 1 end,
+            lock_until_time = case when login_failed_counter + 1 >= 5 then now() + interval '15 minutes' else null end,
+            is_locked = case when login_failed_counter + 1 >= 5 then 1 else 0 end,
+            updated_time = now()
+        where user_id = $1::integer and is_deleted = 0;`
+
+    if (isReset) {
+        commandSql = 
+            `update users
+            set 
+                login_failed_counter = 0,
+                lock_until_time = null,
+                is_locked = 0,
+                updated_time = now()
+            where user_id = $1::integer and is_deleted = 0;`
+    }
+
+    const response = await _postgresDB.query(commandSql, [userId])
+    return response
+}
+
 const getStudentsByClassId = async (classId) => {
     const querySql = 
         `select u.user_id, u.user_name , u.full_name 
@@ -162,6 +188,7 @@ module.exports = {
     getUsersPaging,
     getStudentsByClassId,
     lockUser,
+    updateLockUserInfor,
     updatePasswordUser,
     updateUserInfor
 }

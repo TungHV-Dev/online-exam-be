@@ -12,7 +12,9 @@ create table users (
 	Created_Time 		timestamp 		null,
 	Updated_Time		timestamp		null,
 	Is_Deleted			int				null,
-	Is_Locked 			int				null
+	Is_Locked 			int				null,
+	login_failed_counter int 			null,
+	lock_until_time 	timestamp	 	null
 );
 
 create table roles (

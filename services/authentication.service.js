@@ -5,6 +5,7 @@ const userRepo = require('../repositories/user.repo')
 const roleRepo = require('../repositories/role.repo')
 const constant = require('../utils/constant')
 const { ResponseService } = require('../model/response')
+const logger = require('../logger/logger')
 
 const registerUser = async (data) => {
     try {
@@ -57,17 +58,42 @@ const login = async (data) => {
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không tồn tại trong hệ thống!')
         }
 
+        logger.info(`User ${user.user_id} login at ${new Date()}. Information: is_locked = ${user.is_locked}, login_failed_counter = ${user.login_failed_counter}, lock_until_time = ${new Date(user.lock_until_time)}`)
+
         if (user.is_locked === 1) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên!')
+            if (user.lock_until_time) {
+                if (new Date(user.lock_until_time) > new Date()) {
+                    // Tài khoản bị khoá 15 phút
+                    return new ResponseService(
+                        constant.RESPONSE_CODE.FAIL, 
+                        `Tài khoản đã bị khóa. Vui lòng chờ tới ${moment(new Date(user.lock_until_time)).format(constant.DATE_FORMAT.YYYY_MM_DD_HH_mm_ss)} hoặc liên hệ quản trị viên!`
+                    )
+                } else {
+                    // Hết thời gian khoá tài khoản, reset số lần đăng nhập sai về 0 và mở khoá
+                    await userRepo.updateLockUserInfor(Number(user.user_id), true)
+                }
+            } else {
+                // Tài khoản bị khoá vô thời hạn (trường lock_until_time nhận giá trị null)
+                return new ResponseService(
+                    constant.RESPONSE_CODE.FAIL,
+                    'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên!'
+                )
+            }
         }
 
         // Kiểm tra password
         const passwordHashInDb = user.password_hash || ''
         const checkPassword = bcrypt.compareSync(password, passwordHashInDb)
         if (!checkPassword) {
-            return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!')
+            await userRepo.updateLockUserInfor(Number(user.user_id), false) // Cập nhật số lần đăng nhập thất bại vào DB
+
+            if (Number(user.login_failed_counter) + 1 < 5) {             
+                return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!')
+            } else {
+                return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Tài khoản đã bị khoá 15 phút do nhập sai mật khẩu quá 5 lần!')
+            }
         }
-        
+
         // Generate access token
         const functionCodes = []
         const functionList = await roleRepo.getPermissionByRoleId(user.role_id)

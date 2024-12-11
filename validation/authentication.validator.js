@@ -21,13 +21,8 @@ const registerValidator = function (data) {
 
 const loginValidator = function (data) {
     // check username
-    if (!data.username || !checkUserNameValid(data.username)) {
-        return new ResponseValidator(false, 'Tên đăng nhập không hợp lệ!')
-    }
-
-    // check password
-    if (!data.password || !checkPasswordValid(data.password)) {
-        return new ResponseValidator(false, 'Mật khẩu không hợp lệ!')
+    if (!data.username || !data.password) {
+        return new ResponseValidator(false, 'Tên đăng nhập hoặc mật khẩu không được để trống!')
     }
 
     return new ResponseValidator(true)
