@@ -6,6 +6,7 @@ const roleRepo = require('../repositories/role.repo')
 const constant = require('../utils/constant')
 const { ResponseService } = require('../model/response')
 const logger = require('../logger/logger')
+const moment = require('moment')
 
 const registerUser = async (data) => {
     try {
