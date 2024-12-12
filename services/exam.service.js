@@ -84,7 +84,7 @@ const compileCode = async (examId, questionNumber, language, code) => {
 }
 
 const submitExamResult = async (data, userId) => {
-    const { examId, startTime, endTime, questionResults } = data
+    const { examId, classId, startTime, endTime, questionResults } = data
 
     const exam = await examRepo.getExamById(examId)
     if (!exam) {
@@ -171,7 +171,7 @@ const submitExamResult = async (data, userId) => {
     }
 
     // Lưu kết quả làm bài
-    const insertResult1 = await examRepo.insertAttempt(userId, exam?.class_id || 0, examId, startTime, endTime, Number(totalScore.toFixed(2)))
+    const insertResult1 = await examRepo.insertAttempt(userId, classId, examId, startTime, endTime, Number(totalScore.toFixed(2)))
     if (insertResult1.rowCount === 0 || !insertResult1.rows[0].attempt_id) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại!')
     }
