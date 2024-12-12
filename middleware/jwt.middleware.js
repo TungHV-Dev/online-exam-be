@@ -50,7 +50,7 @@ const verifyToken = async (req, res, next) => {
                     })
                 }
             } else {
-                // Tài khoản bị khoá vô thời hạn (trường lock_until_time nhận giá trị null)
+                // Tài khoản bị khoá vô thời hạn (trường lock_until_time nhận giá trị null), liên hệ admin
                 return res.status(constant.HTTP_STATUS_CODE.UNAUTHORIZED).json({
                     code: -1,
                     message: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên!'

@@ -120,7 +120,12 @@ const getUsersPaging = async (searchValue, offsetValue = 0, limitValue = 10) => 
 }
 
 const lockUser = async (userId, lock) => {
-    const commandSql = `update users set is_locked = $1 where user_id = $2 and is_deleted = 0;`
+    let commandSql = `update users set is_locked = $1 `
+
+    if (lock === 0) {
+        commandSql += ` , login_failed_counter = 0, lock_until_time = null `
+    }
+    commandSql += ` , updated_time = now() where user_id = $2 and is_deleted = 0;`
     const response = await _postgresDB.query(commandSql, [lock, userId])
     return response
 }
