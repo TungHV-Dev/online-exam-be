@@ -101,7 +101,8 @@ create table attempt_answer (
 	Submitted_Code 			text 			null,
 	Score 					decimal 		null,
 	Is_Correct_Answer 		int 			null,
-	Total_Correct_Test_Cases int 			null
+	Total_Correct_Test_Cases int 			null,
+	language_code			text			null
 );
 
 create table questions (

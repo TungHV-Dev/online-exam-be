@@ -149,13 +149,13 @@ const insertAttempt = async (userId, classId, examId, startTime, endTime, score)
 
 const insertAttemptAnswer = async (attemptId, userResults) => {
     let commandSql = 
-        `insert into attempt_answer (attempt_id, question_id, choosed_result_key, choosed_result_value, submitted_code, total_correct_test_cases)
+        `insert into attempt_answer (attempt_id, question_id, choosed_result_key, choosed_result_value, submitted_code, total_correct_test_cases, language_code)
         values `
 
     let index = 0
     let params = []
     for (let i = 0; i < userResults.length; i++) {
-        commandSql += ` ($${++index}::integer, $${++index}::integer, $${++index}::integer, $${++index}::text, $${++index}::text, $${++index}::integer)`
+        commandSql += ` ($${++index}::integer, $${++index}::integer, $${++index}::integer, $${++index}::text, $${++index}::text, $${++index}::integer, $${++index}::text)`
         if (i < userResults.length - 1) {
             commandSql += ','
         }
@@ -166,7 +166,8 @@ const insertAttemptAnswer = async (attemptId, userResults) => {
             userResults[i].choosedResultKey || null, 
             userResults[i].choosedResultValue || '', 
             userResults[i].submittedCode || '', 
-            userResults[i].totalCorrectTestCases || null
+            userResults[i].totalCorrectTestCases || null,
+            userResults[i].languageCode || ''
         )
     }
 

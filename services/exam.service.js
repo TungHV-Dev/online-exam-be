@@ -28,7 +28,7 @@ const compileCode = async (examId, questionNumber, language, code) => {
 
     let configPistonAPI = {
         method: 'post',
-        url: 'https://emkc.org/api/v2/piston/execute',
+        url: `${process.env.PISTON_API_BASE_URL || 'https://emkc.org'}/api/v2/piston/execute`,
         headers: {
             'Content-Type': 'application/json'
         },
@@ -165,7 +165,8 @@ const submitExamResult = async (data, userId) => {
             userResultInsert.push({
                 questionId: question.question_id,
                 totalCorrectTestCases: totalCorrectTestCases,
-                submittedCode: sourceCode?.submitedCode || ''
+                submittedCode: sourceCode?.submitedCode || '',
+                languageCode: sourceCode?.language || ''
             })
         }
     }
@@ -478,12 +479,26 @@ const viewExamByStudent = async (data, userId) => {
         let questionItem = {
             questionNumber: question.question_number,
             questionType: question.question_type,
-            questionContent: question.question_content
+            questionContent: question.question_content,
+            totalTestcases: Number(question.total_test_cases || 0),
+            correctTestcases: 0,
+            sourceCode: {
+                submitedCode: '',
+                language: ''
+            }
         }
 
         let resultList = null
         if (actionType === 'view') {
             const userResultForQuestion = userResults?.filter(x => x.question_id === question.question_id)
+            if (questionItem.questionType === MASTER_DATA.QUESTION_TYPE.TYPE_4) {
+                questionItem.sourceCode = {
+                    submitedCode: userResultForQuestion[0].submitted_code || '',
+                    language: userResultForQuestion[0].language_code || ''
+                },
+                questionItem.correctTestcases = Number(userResultForQuestion[0].total_correct_test_cases || 0)
+            }
+
             const userResultMap = new Map()
             for (const rs of userResultForQuestion) {
                 userResultMap.set(Number(rs.choosed_result_key), rs.choosed_result_value)
