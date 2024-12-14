@@ -26,9 +26,16 @@ const compileCode = async (examId, questionNumber, language, code) => {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Không tìm thấy test case cho câu hỏi!')
     }
 
+    let urlApiPiston = process.env.PISTON_API_BASE_URL || 'https://emkc.org'
+    if (urlApiPiston.includes('localhost')) {
+        urlApiPiston += '/api/v2/execute'
+    } else {
+        urlApiPiston += '/api/v2/piston/execute'
+    }
+
     let configPistonAPI = {
         method: 'post',
-        url: `${process.env.PISTON_API_BASE_URL || 'https://emkc.org'}/api/v2/piston/execute`,
+        url: urlApiPiston,
         headers: {
             'Content-Type': 'application/json'
         },
