@@ -289,5 +289,33 @@ router.get('/infor-basic', [verifyToken], async (req, res) => {
     }
 })
 
+router.get('/learning-result', [verifyToken], async (req, res) => {
+    try {
+        const page = req.query.page || 0
+        const size = req.query.size || 10
+        let classId = req.query.classId ? Number(req.query.classId) : null
+        
+        const result = await examService.searchStudentLearningResult(page, size, classId, Number(req.userId), Number(req.roleId))
+        if (result.resultCode === constant.RESPONSE_CODE.SUCCESS) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result.data
+            })
+        }
+        
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.NOT_FOUND,
+            message: constant.RESPONSE_MESSAGE.NOT_FOUND,
+        })
+    } catch (e) {
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
 
 module.exports = router

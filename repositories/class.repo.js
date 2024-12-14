@@ -217,6 +217,33 @@ const getAllSubject = async () => {
     return response.rows || []
 }
 
+const getAllClasses = async () => {
+    const querySql = 
+        `select class_id, class_code, class_name from class where is_deleted = 0;`
+
+    const response = await _postgresDB.query(querySql)
+    return response.rows || []
+}
+
+const getAllClassesByTeacherId = async (teacherId) => {
+    const querySql = 
+        `select class_id, class_code, class_name from class where teacher_id = $1::integer and is_deleted = 0;`
+
+    const response = await _postgresDB.query(querySql, [teacherId])
+    return response.rows || []
+}
+
+const getAllClassesByStudentId = async (studentId) => {
+    const querySql = 
+        `select c.class_id, c.class_code, c.class_name 
+        from "class" c 
+        inner join user_class uc on uc.class_id = c.class_id 
+        where uc.user_id = $1::integer and uc.is_deleted = 0 and c.is_deleted = 0;`
+
+    const response = await _postgresDB.query(querySql, [studentId])
+    return response.rows || []
+}
+
 module.exports = {
     insertClass,
     getClassById,
@@ -231,5 +258,8 @@ module.exports = {
     getListExamCreatedPaging,
     getDocumentListPaging,
     insertClassDocument,
-    getAllSubject
+    getAllSubject,
+    getAllClasses,
+    getAllClassesByTeacherId,
+    getAllClassesByStudentId
 }

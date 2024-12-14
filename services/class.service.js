@@ -189,6 +189,25 @@ const getMasterDataSubjects = async (params) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', results)
 }
 
+const getMasterDataClasses = async (currentUserId, currentRoleId) => {
+    let classes = []
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.ADMIN) {
+        classes = await classRepo.getAllClasses()
+    } else if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.TEACHER) {
+        classes = await classRepo.getAllClassesByTeacherId(currentUserId)
+    } else {
+        classes = await classRepo.getAllClassesByStudentId(currentUserId)
+    }
+
+    const results = classes.map(c => {
+        return {
+            classId: c.class_id,
+            className: `${c.class_name} (${c.class_code})`
+        }
+    })
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', results)
+}
+
 module.exports = {
     getPublishedClassList,
     createNewClass,
@@ -198,5 +217,6 @@ module.exports = {
     getListExamNeedDone,
     getListExamCreated,
     addDocument,
-    getMasterDataSubjects
+    getMasterDataSubjects,
+    getMasterDataClasses
 }

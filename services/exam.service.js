@@ -359,7 +359,7 @@ const pushExamToStorage = async (data, currentUserId, currentRoleId) => {
 }
 
 const deleteExam = async (data, currentUserId, currentRoleId) => {
-    const { examId } = data
+    const { examId, classId } = data
 
     if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
         return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Người dùng không có quyền xoá bài thi!')
@@ -378,7 +378,7 @@ const deleteExam = async (data, currentUserId, currentRoleId) => {
         examRepo.deleteResults(examId)
     ])
     await examRepo.deleteQuestions(examId)
-    await examRepo.deleteExamFromAllClasses(examId)
+    await examRepo.deleteExamFromClass(examId, classId)
     
     const deletedExam = await examRepo.deleteExam(examId)
     if (deletedExam.rowCount === 0) {
@@ -567,6 +567,37 @@ const getBasicExamInforByExamCode = async (examCode) => {
     return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', result)
 }
 
+const searchStudentLearningResult = async (page, size, classId, currentUserId, currentRoleId) => {
+    const limit = size
+    const offset = page * size
+
+    let studentId = null
+    let teacherId = null
+    if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.STUDENT) {
+        studentId = currentUserId
+    } else if (currentRoleId === MASTER_DATA.ROLE.ROLE_ID.TEACHER) {
+        teacherId = currentUserId
+    }
+
+    let searchResult = await examRepo.getStudentLearningResultPaging(offset, limit, studentId, teacherId, classId)
+    let formatedArr = []
+
+    for (const item of searchResult.searchData) {
+        formatedArr.push({
+            studentName: item.student_full_name && item.student_user_name ? `${item.student_full_name} (${item.student_user_name})` : item.student_user_name ? item.student_user_name : '',
+            className: item.class_name && item.class_code ? `${item.class_name} (${item.class_code})` : item.class_name,
+            teacherName: item.teacher_full_name && item.teacher_user_name ? `${item.teacher_full_name} (${item.teacher_user_name})` : item.teacher_user_name ? item.teacher_user_name : '',
+            examName: item.exam_name || '',
+            totalQuestions: Number(item.total_question || 0),
+            totalCorrectQuestions: Math.round(Number(item.total_question || 0) * Number(item.score || 0) / 10),
+            score: Number(item.score || 0).toFixed(2),
+            examDate: item.start_time ? moment(item.start_time).format(constant.DATE_FORMAT.DD_MM_YYYY) : ''
+        })
+    }
+    searchResult.searchData = formatedArr
+    return new ResponseService(constant.RESPONSE_CODE.SUCCESS, '', searchResult)
+}
+
 
 module.exports = {
     compileCode,
@@ -578,5 +609,6 @@ module.exports = {
     viewExam, 
     viewExamByStudent,
     searchExam,
-    getBasicExamInforByExamCode
+    getBasicExamInforByExamCode,
+    searchStudentLearningResult
 }

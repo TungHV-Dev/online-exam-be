@@ -9,7 +9,7 @@ const getOverviewData = async () => {
             (select count(attempt_id) from attempts where is_deleted = 0) as total_joined_exam,
             (select coalesce(avg(coalesce(score, 0)), 0) from attempts where is_deleted = 0) as avg_score;`
 
-    const response = await _postgresDB.query(sqlQuery, [masterData.ROLE.ROLE_ID.TEACHER])
+    const response = await _postgresDB.query(sqlQuery, [masterData.ROLE.ROLE_ID.STUDENT])
     return response.rows[0]
 }
 

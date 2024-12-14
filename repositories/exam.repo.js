@@ -303,11 +303,81 @@ const searchExam = async (limit, offset, subjectId, creatorId) => {
     }
 }
 
-const deleteExamFromAllClasses = async (examId) => {
-    const commandSql = 
+const deleteExamFromClass = async (examId, classId) => {
+    let commandSql = 
         `delete from exam_class where exam_id = $1::integer`
-    const response = await _postgresDB.query(commandSql, [examId])
+
+    let params = [examId]
+    if (classId && classId > 0) {
+        params.push(classId)
+        commandSql += ` and class_id = $2::integer`
+    }
+    
+    const response = await _postgresDB.query(commandSql, params)
     return response
+}
+
+const getStudentLearningResultPaging = async (offset, limit, studentId, teacherId, classId) => {
+    let indexParams = 0
+    let params = []
+    let conditionStr = ''
+
+    if (studentId && studentId > 0) {
+        indexParams++
+        params.push(studentId)
+        conditionStr += ` and s.user_id = $${indexParams}::integer `
+    }
+
+    if (teacherId && teacherId > 0) {
+        indexParams++
+        params.push(teacherId)
+        conditionStr += ` and c.teacher_id = $${indexParams}::integer `
+    }
+
+    if (classId && classId > 0) {
+        indexParams++
+        params.push(classId)
+        conditionStr += ` and c.class_id = $${indexParams}::integer `
+    }
+
+    conditionStr += ` and a.is_deleted = 0 and e.is_deleted = 0 and s.is_deleted = 0 `
+    conditionStr = conditionStr.trim().substring(3)
+
+    let querySql = 
+        `select
+            s.user_name as student_user_name, s.full_name as student_full_name,
+            c.class_code, c.class_name,
+            t.user_name as teacher_user_name, t.full_name as teacher_full_name,
+            e.exam_name, e.total_question,
+            a.score, a.start_time
+        from attempts a 
+        left join exam e on e.exam_id = a.exam_id 
+        left join users s on s.user_id = a.user_id 
+        left join "class" c on c.class_id = a.class_id
+        left join users t on t.user_id  = c.teacher_id 
+        where ${conditionStr}
+        order by s.user_name, c.class_name
+        offset $${++indexParams}::integer
+        limit $${++indexParams}::integer`
+
+    let totalSql = 
+        `select count(a.attempt_id) as total
+        from attempts a 
+        left join exam e on e.exam_id = a.exam_id 
+        left join users s on s.user_id = a.user_id 
+        left join "class" c on c.class_id = a.class_id
+        left join users t on t.user_id  = c.teacher_id 
+        where ${conditionStr}`
+
+    const response = await Promise.all([
+        _postgresDB.query(querySql, [...params, offset, limit]),
+        _postgresDB.query(totalSql, params)
+    ])
+    
+    return {
+        searchData: response[0]?.rows || [],
+        total: response[1]?.rows[0]?.total || 0
+    }
 }
 
 module.exports = {
@@ -334,5 +404,6 @@ module.exports = {
     getQuestionByExamIdAndQuestionNumber,
     getTestCasesByQuestionId,
     searchExam,
-    deleteExamFromAllClasses
+    deleteExamFromClass,
+    getStudentLearningResultPaging
 }

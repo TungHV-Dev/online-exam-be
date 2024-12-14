@@ -242,5 +242,29 @@ router.get('/all-subjects', [verifyToken], async (req, res) => {
     }
 })
 
+router.get('/all-classes', [verifyToken], async (req, res) => {
+    try {
+        const result = await classService.getMasterDataClasses(req.userId, req.roleId)
+        if (result.resultCode === constant.RESPONSE_CODE.SUCCESS) {
+            return res.status(constant.HTTP_STATUS_CODE.OK).json({
+                code: constant.RESPONSE_CODE.SUCCESS,
+                message: constant.RESPONSE_MESSAGE.SUCCESS,
+                data: result.data
+            })
+        }
+
+        return res.status(constant.HTTP_STATUS_CODE.OK).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: result.message || constant.RESPONSE_MESSAGE.FAIL,
+        })
+    } catch (e) {
+        logger.error(`Exception at router ${req.originalUrl}: ${e?.message}`)
+        return res.status(e.status || constant.HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+            code: constant.RESPONSE_CODE.FAIL,
+            message: e?.message || constant.RESPONSE_MESSAGE.SYSTEM_ERROR
+        })
+    }
+})
+
 
 module.exports = router
