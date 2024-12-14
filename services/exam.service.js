@@ -69,6 +69,7 @@ const compileCode = async (examId, questionNumber, language, code) => {
                 }
             }
         } catch (err) {
+            console.log(err)
             logger.error(`Exception when compile code: ${err?.message}`)
             return new ResponseService(constant.RESPONSE_CODE.FAIL, 'Đã có lỗi xảy ra trong quá trình compile code. Vui lòng thử lại sau!')
         }
