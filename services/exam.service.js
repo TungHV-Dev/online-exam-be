@@ -32,6 +32,7 @@ const compileCode = async (examId, questionNumber, language, code) => {
     } else {
         urlApiPiston += '/api/v2/piston/execute'
     }
+    urlApiPiston = 'https://emkc.org/api/v2/piston/execute'
 
     let configPistonAPI = {
         method: 'post',
