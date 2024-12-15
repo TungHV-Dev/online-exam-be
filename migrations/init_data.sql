@@ -18,15 +18,17 @@ values
 	(7, 'view_list_exam_created', 'Xem danh sách bài thi đã tạo và thực hiện các action trên danh sách đó nếu không có phân quyền cụ thể cho từng action', 0),
 	(8, 'view_list_exam_need_done', 'Xem danh sách bài thi cần hoàn thành và thực hiện các action trên danh sách đó nếu không có phân quyền cụ thể cho từng action', 0),
 	(9, 'view_all_exam_result', 'Xem kết quả các bài thi của các học viên', 0),
-	(10, 'add_document', 'Thêm tài liệu cho lớp học', 0);
+	(10, 'add_document', 'Thêm tài liệu cho lớp học', 0),
+	(11, 'download_document', 'Download tài liệu của lớp học', 0),
+	(12, 'view_exam_management', 'Xem và thực hiện các thao tác trên màn hình Kho đề thi', 0);
 
 
 -- Khởi tạo data bảng role_app_function
 insert into role_app_function (role_id, function_id)
 values 
-	(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10),
-	(2, 1), (2, 2), (2, 4), (2, 5), (2, 6), (2, 7), (2, 9), (2, 10),
-	(3, 1), (3, 2), (3, 5), (3, 6), (3, 8);
+	(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12),
+	(2, 1), (2, 2), (2, 4), (2, 5), (2, 6), (2, 7), (2, 9), (2, 10), (2, 11), (2, 12),
+	(3, 1), (3, 2), (3, 5), (3, 6), (3, 8), (3, 11);
 
 -- Khởi tạo data cho bảng subject
 insert into subject (subject_name, is_deleted, subject_code)
